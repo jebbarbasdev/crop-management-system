@@ -1,14 +1,9 @@
-import { ColorSchemeScript, MantineProvider, createTheme, mantineHtmlProps } from '@mantine/core';
-import { Notifications } from '@mantine/notifications';
+import { Inter } from 'next/font/google';
+import { Toaster } from 'sonner';
 
-// Import styles of packages that you've installed.
-// All packages except `@mantine/hooks` require styles imports
-import '@mantine/core/styles.css';
-import '@mantine/notifications/styles.css';
+import './layout.css';
 
-const theme = createTheme({
-    primaryColor: 'teal'
-});
+const inter = Inter({ subsets: ['latin'] });
 
 export default async function RootLayout({
     children,
@@ -16,15 +11,10 @@ export default async function RootLayout({
     children: React.ReactNode;
 }>) {
     return (
-        <html lang="es" {...mantineHtmlProps}>
-            <head>
-                <ColorSchemeScript defaultColorScheme="auto" />
-            </head>
-            <body>
-                <MantineProvider defaultColorScheme="auto" theme={theme}>
-                    <Notifications />
-                    {children}
-                </MantineProvider>
+        <html lang="es">
+            <body className={inter.className}>
+                <Toaster richColors closeButton position="top-right" />
+                {children}
             </body>
         </html>
     );

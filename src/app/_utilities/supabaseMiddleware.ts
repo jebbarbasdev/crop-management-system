@@ -37,14 +37,19 @@ export async function updateSession(request: NextRequest) {
         data: { user },
     } = await supabase.auth.getUser()
 
-    if (
-        !user &&
-        !request.nextUrl.pathname.startsWith('/login') &&
-        !request.nextUrl.pathname.startsWith('/forgot-password')
-    ) {
+    const unprotectedPaths = ['/sign-in', '/forgot-password']
+    const isUnprotectedPath = unprotectedPaths.some((path) => request.nextUrl.pathname.startsWith(path))
+
+    if (!user && !isUnprotectedPath) {
         // no user, potentially respond by redirecting the user to the login page
         const url = request.nextUrl.clone()
-        url.pathname = '/login'
+        url.pathname = '/sign-in'
+        return NextResponse.redirect(url)
+    }
+    else if (user && isUnprotectedPath){
+        // user exists, potentially respond by redirecting the user to the home page
+        const url = request.nextUrl.clone()
+        url.pathname = '/'
         return NextResponse.redirect(url)
     }
 

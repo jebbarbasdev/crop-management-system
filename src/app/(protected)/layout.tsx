@@ -1,6 +1,5 @@
 import { redirect } from "next/navigation"
 import { createSupabaseServerClient } from "../_utilities/createSupabaseServerClient"
-import CmsAppShell from "../_components/cms-app-shell"
 
 export default async function ProtetedLayout({ 
     children
@@ -15,8 +14,8 @@ export default async function ProtetedLayout({
     // }
 
     return (
-        <CmsAppShell>
+        <>
             {children}
-        </CmsAppShell>
+        </>
     )
 }
