@@ -1,5 +1,5 @@
 import { Metadata } from 'next';
-import SignInForm from './_components/SignInForm';
+import ResetForm from './_components/ResetForm';
 
 export const metadata: Metadata = {
     title: "Iniciar Sesión | Crop Management System",
@@ -8,6 +8,6 @@ export const metadata: Metadata = {
 
 export default function SignInPage() {
     return (
-        <SignInForm></SignInForm>
+        <ResetForm></ResetForm>
     );
 }

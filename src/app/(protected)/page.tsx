@@ -1,8 +1,8 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-    title: "Inicio | Crop Management System",
-    description: "Página de Inicio de Crop Management System",
+    title: "Dashboard | Crop Management System",
+    description: "Página de Dashboard de Crop Management System",
 };
 
 export default function Home() {

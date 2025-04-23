@@ -37,7 +37,7 @@ export async function updateSession(request: NextRequest) {
         data: { user },
     } = await supabase.auth.getUser()
 
-    const unprotectedPaths = ['/sign-in', '/forgot-password']
+    const unprotectedPaths = ['/sign-in', '/forgot-password', '/auth/callback']
     const isUnprotectedPath = unprotectedPaths.some((path) => request.nextUrl.pathname.startsWith(path))
 
     if (!user && !isUnprotectedPath) {

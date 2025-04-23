@@ -1,6 +1,5 @@
 'use server'
 
-import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 
 import { createSupabaseServerClient } from '@/app/_utilities/createSupabaseServerClient'
@@ -12,10 +11,9 @@ export async function signInAction(data: SignInFormSchema) {
     const { success, data: parsedData, error: parseError } = signInFormSchema.safeParse(data)
     if (!success) return parseError.message
 
-    const { error } = await supabase.auth.signInWithPassword(parsedData!)
+    const { error } = await supabase.auth.signInWithPassword(parsedData)
     if (error) return error.message
     
-    revalidatePath('/', 'layout')
     redirect('/')
 }
 

@@ -8,12 +8,13 @@ import { signInAction } from '../actions';
 import { toast } from 'sonner';
 import TitledForm from '@/app/_components/TitledForm';
 import Link from 'next/link';
+import DaisyButton from '@/app/_components/DaisyButton';
 
 export default function SignInForm() {
     const { 
         register, 
         handleSubmit, 
-        formState: { errors } 
+        formState: { errors, isSubmitting },
     } = useForm({ resolver: zodResolver(signInFormSchema) })
 
     const signIn = async (data: SignInFormSchema) => {
@@ -44,12 +45,12 @@ export default function SignInForm() {
                     {...register('password')}
                 />
 
-                <button className="btn btn-primary">Iniciar Sesión</button>
+                <DaisyButton variant="primary" loading={isSubmitting}>Iniciar Sesión</DaisyButton>
 
                 <div className='text-sm text-center'>
                     <span>¿Olvidaste tu contraseña?{' '}</span>
                     <Link href="/forgot-password" className='link link-primary'>
-                        Restablecer Contraseña
+                        Recuperar Contraseña
                     </Link>
                 </div>
             </form>
