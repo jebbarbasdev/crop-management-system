@@ -1,5 +1,5 @@
 import { Metadata } from 'next';
-import PageTitle from '../../_components/PageTitle';
+import GenericTitle from '../../_components/GenericTitle';
 import { getUserWithCustomClaims } from '../../_services/getUserWithCustomClaims';
 import DashboardCard from './_components/DashboardCard';
 
@@ -13,7 +13,7 @@ export default async function DashboardPage() {
 
     return (
         <div>
-            <PageTitle>Bievenido a Crop Management System</PageTitle>
+            <GenericTitle>Bievenido a Crop Management System</GenericTitle>
 
             <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
                 {user && Object.values(user.modulesWithAccess).map(module => (            

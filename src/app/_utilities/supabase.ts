@@ -81,6 +81,61 @@ export type Database = {
           },
         ]
       }
+      products: {
+        Row: {
+          created_at: string
+          created_by: string
+          deleted_at: string | null
+          deleted_by: string | null
+          id: number
+          name: string
+          updated_at: string
+          updated_by: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string
+          deleted_at?: string | null
+          deleted_by?: string | null
+          id?: number
+          name: string
+          updated_at?: string
+          updated_by?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          deleted_at?: string | null
+          deleted_by?: string | null
+          id?: number
+          name?: string
+          updated_at?: string
+          updated_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "products_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "products_deleted_by_fkey"
+            columns: ["deleted_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "products_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       roles: {
         Row: {
           description: string
@@ -136,10 +191,11 @@ export type Database = {
           deleted_at: string | null
           deleted_by: string | null
           email: string
+          employee_number: number
           full_name: string | null
           id: string
           role_id: number
-          updated_at: string | null
+          updated_at: string
           updated_by: string | null
         }
         Insert: {
@@ -148,10 +204,11 @@ export type Database = {
           deleted_at?: string | null
           deleted_by?: string | null
           email: string
+          employee_number?: number
           full_name?: string | null
           id: string
           role_id: number
-          updated_at?: string | null
+          updated_at?: string
           updated_by?: string | null
         }
         Update: {
@@ -160,10 +217,11 @@ export type Database = {
           deleted_at?: string | null
           deleted_by?: string | null
           email?: string
+          employee_number?: number
           full_name?: string | null
           id?: string
           role_id?: number
-          updated_at?: string | null
+          updated_at?: string
           updated_by?: string | null
         }
         Relationships: [

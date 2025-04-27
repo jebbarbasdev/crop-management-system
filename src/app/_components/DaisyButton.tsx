@@ -3,6 +3,7 @@ import clsx from "clsx";
 
 export type DaisyTooltipPlacement = 'top' | 'bottom' | 'left' | 'right'
 
+export type DaisyButtonSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl'
 export type DaisyButtonVariant = 'neutral' | 'primary' | 'secondary' | 'accent' | 'info' | 'success' | 'warning' | 'error' | 'ghost' | 'link';
 export type DaisyButtonAppearance = 'outline' | 'dash' | 'soft' | 'ghost' | 'link'
 export type DaisyButtonModifier = 'wide' | 'block' | 'square' | 'circle'
@@ -12,12 +13,13 @@ export interface DaisyButtonProps extends ButtonHTMLAttributes<HTMLButtonElement
     tooltip?: string
     tooltipPlacement?: DaisyTooltipPlacement
 
+    size?: DaisyButtonSize
     variant?: DaisyButtonVariant
     appearance?: DaisyButtonAppearance
     modifier?: DaisyButtonModifier
 }
 
-export default function DaisyButton({ children, loading, tooltip, tooltipPlacement, variant, appearance, modifier, className, ...props }: DaisyButtonProps) {
+export default function DaisyButton({ children, loading, tooltip, tooltipPlacement, size, variant, appearance, modifier, className, ...props }: DaisyButtonProps) {
     const getTooltipPlacementTailwindClass = () => {
         switch (tooltipPlacement) {
             case 'top': return 'tooltip-top'
@@ -28,6 +30,17 @@ export default function DaisyButton({ children, loading, tooltip, tooltipPlaceme
         }
     }
     
+    const getSizeTailiwindClass = () => {
+        switch (size) {
+            case 'xs': return 'btn-xs'
+            case 'sm': return 'btn-sm'
+            case 'md': return 'btn-md'
+            case 'lg': return 'btn-lg'
+            case 'xl': return 'btn-xl'
+            default: return ''
+        }
+    }
+
     const getVariantTailiwindClass = () => {
         switch (variant) {
             case 'neutral': return 'btn-neutral'
@@ -67,7 +80,7 @@ export default function DaisyButton({ children, loading, tooltip, tooltipPlaceme
 
     const Button = () => (
         <button
-            className={clsx(className, "btn", getVariantTailiwindClass(), getAppearanceTailiwindClass(), getModifierTailiwindClass())}
+            className={clsx(className, "btn", getSizeTailiwindClass(), getVariantTailiwindClass(), getAppearanceTailiwindClass(), getModifierTailiwindClass())}
             disabled={loading}
 
             {...props}
@@ -80,7 +93,7 @@ export default function DaisyButton({ children, loading, tooltip, tooltipPlaceme
     if (!tooltip) return <Button />
 
     return (
-        <div className={clsx("tooltip", getTooltipPlacementTailwindClass())} data-tip={tooltip}>
+        <div className={clsx("tooltip z-10", getTooltipPlacementTailwindClass())} data-tip={tooltip}>
             <Button />
         </div>
     )

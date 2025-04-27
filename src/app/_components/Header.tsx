@@ -1,6 +1,5 @@
 import clsx from "clsx";
 import { HTMLAttributes } from "react";
-import { createSupabaseServerClient } from "../_utilities/createSupabaseServerClient";
 import { UserWithCustomClaims } from "../_services/getUserWithCustomClaims";
 
 export interface HeaderProps extends HTMLAttributes<HTMLDivElement> {
@@ -16,7 +15,7 @@ export default async function Header({ className, user, ...props }: HeaderProps)
             <h1 className="font-bold text-xl">Crop Management System</h1>
             {user && (
                 <div className="flex justify-center items-center text-xs">
-                    Hola, {user.full_name ?? user.email} ({user.role_id.name})
+                    #{user.employee_number} - {user.full_name ?? user.email} ({user.role_id.name})
                 </div>
             )}
         </header>
