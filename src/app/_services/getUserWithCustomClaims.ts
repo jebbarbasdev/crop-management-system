@@ -73,17 +73,17 @@ export async function getUserWithCustomClaims() {
         modulesWithAccess,
 
         hasPermissionIn(moduleName: string, permissionName: string) {
-            const module = this.modulesWithAccess[moduleName]
-            if (!module) return false
+            const moduleRecord = this.modulesWithAccess[moduleName]
+            if (!moduleRecord) return false
 
-            return module.permissions.some(permission => permission.name === permissionName)
+            return moduleRecord.permissions.some(permission => permission.name === permissionName)
         },
 
         hasAnyPermissionIn(moduleName: string) {
-            const module = this.modulesWithAccess[moduleName]
-            if (!module) return false
+            const moduleRecord = this.modulesWithAccess[moduleName]
+            if (!moduleRecord) return false
 
-            return module.permissions.length > 0
+            return moduleRecord.permissions.length > 0
         }
     }
 }
