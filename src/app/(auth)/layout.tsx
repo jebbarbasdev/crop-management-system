@@ -9,7 +9,7 @@ export default function AuthLayout({
 }>) {
     return (
         <div className={css.container}>
-            <Header className={css.header} />
+            <Header className={css.header} user={null} />
 
             <div className={clsx(css.logo, 'flex flex-col items-center justify-center gap-4 p-4')}>
                 <img 
