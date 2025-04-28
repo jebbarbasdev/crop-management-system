@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "gentypes": "dotenv supabase gen types typescript --project-id \"$SUPABASE_PROJECT_ID\" --schema public > \"src/app/_utilities/supabase.ts\""
+    "gentypes": "dotenv supabase gen types typescript --project-id \"$SUPABASE_PROJECT_ID\" --schema public > \"src/app/_utilities/supabase.ts\"",
+    "test": "next lint && next build"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.0.1",

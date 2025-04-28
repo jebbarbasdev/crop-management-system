@@ -23,7 +23,7 @@ export default function ProductsTable({
 
     return (
         <div className="overflow-x-auto w-full border border-base-content/5 bg-base-100">
-            <table className="table table-zebra table-pin-rows text-center text-nowrap">
+            <table className="table table-zebra table-pin-rows text-center whitespace-nowrap">
                 <thead>
                     <tr className="bg-primary text-primary-content">
                         <th>Nombre</th>
@@ -39,7 +39,7 @@ export default function ProductsTable({
                         isLoading ? (
                             <TableSkeleton rows={5} cols={6} />
                         ) : error ? (
-                            <tr className="bg-error text-error-content">
+                            <tr className="bg-error-content text-error">
                                 <td colSpan={6}>
                                     Error al cargar los productos: {error.message}
                                 </td>

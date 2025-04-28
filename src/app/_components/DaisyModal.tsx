@@ -8,6 +8,8 @@ import { UseModalModel } from "../_hooks/useModal"
 export interface DaisyModalProps {
     modalModel: UseModalModel
     
+    size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl'
+
     title: string
     cancelText?: string
     confirmText?: string
@@ -18,10 +20,21 @@ export interface DaisyModalProps {
     loading?: boolean
 }
 
-export default function DaisyModal({ modalModel: { id, close }, title, cancelText, confirmText, onSubmit, loading, children }: DaisyModalProps) {
+export default function DaisyModal({ modalModel: { id, close }, size, title, cancelText, confirmText, onSubmit, loading, children }: DaisyModalProps) {
+    const getSizeTailwindClass = () => {
+        switch (size) {
+            case 'xs': return 'max-w-xl'
+            case 'sm': return 'max-w-2xl'
+            case 'md': return 'max-w-3xl'
+            case 'lg': return 'max-w-4xl'
+            case 'xl': return 'max-w-5xl'
+            default: return 'max-w-3xl'
+        }
+    }
+    
     return (
         <dialog className="modal" id={id}>
-            <div className="modal-box">
+            <div className={clsx("modal-box", getSizeTailwindClass())}>
                 <form method="dialog" onSubmit={onSubmit}>
                     <div className="flex justify-between items-center mb-4">
                         <GenericTitle removeMargin>{title}</GenericTitle>

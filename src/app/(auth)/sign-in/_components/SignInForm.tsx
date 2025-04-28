@@ -32,6 +32,8 @@ export default function SignInForm() {
                     label="Correo Electrónico"
                     error={errors.email?.message}
 
+                    disabled={isSubmitting}
+
                     {...register('email')}
                 />
                 
@@ -41,6 +43,8 @@ export default function SignInForm() {
 
                     label="Contraseña"
                     error={errors.password?.message}
+
+                    disabled={isSubmitting}
 
                     {...register('password')}
                 />

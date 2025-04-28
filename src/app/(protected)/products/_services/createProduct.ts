@@ -6,7 +6,7 @@ type CreateProductPayload = TablesInsert<'products'>
 export async function createProduct(payload: CreateProductPayload) {
     const supabase = await createSupabaseBrowserClient();
 
-    const { data, error } = await supabase
+    const { error } = await supabase
         .from("products")
         .insert([payload])
         .select()

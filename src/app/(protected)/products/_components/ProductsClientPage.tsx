@@ -9,12 +9,16 @@ import useModal from "@/app/_hooks/useModal";
 import ProductModal from "./ProductModal";
 import { useState } from "react";
 import DeleteProductModal from "./DeleteProductModal";
+import ConfigurationByStoreModal from "./ConfigurationByStoreModal";
+import ConfigurationByStorageModal from "./ConfigurationByStorageModal";
 
 export default function ProductsClientPage() {
     const [selectedProduct, setSelectedProduct] = useState<Product | null>(null) 
 
     const productModal = useModal()
     const deleteProductModal = useModal()
+    const configurationByStoreModal = useModal()
+    const configurationByStorageModal = useModal()
 
     const handleCreateProduct = () => {
         setSelectedProduct(null)
@@ -22,11 +26,13 @@ export default function ProductsClientPage() {
     }
 
     const handleConfigureProductByStore = (product: Product) => {
-        console.log('Configurando por tienda', product)
+        setSelectedProduct(product)
+        configurationByStoreModal.open()
     }
 
     const handleConfigureProductByStorageUnit = (product: Product) => {
-        console.log('Configurando por unidad de almacenamiento', product)
+        setSelectedProduct(product)
+        configurationByStorageModal.open()
     }
 
     const handleEditProduct = (product: Product) => {
@@ -62,6 +68,8 @@ export default function ProductsClientPage() {
                 onDeleteProductClick={handleDeleteProduct}
             />
 
+            <ConfigurationByStoreModal modalModel={configurationByStoreModal} product={selectedProduct} />
+            <ConfigurationByStorageModal modalModel={configurationByStorageModal} product={selectedProduct} />
             <ProductModal modalModel={productModal} product={selectedProduct} />
             <DeleteProductModal modalModel={deleteProductModal} product={selectedProduct} />
         </div>
