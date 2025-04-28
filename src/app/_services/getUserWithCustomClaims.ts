@@ -1,4 +1,3 @@
-import { permission } from "process";
 import { createSupabaseServerClient } from "../_utilities/createSupabaseServerClient";
 
 export type UserWithCustomClaims = NonNullable<Awaited<ReturnType<typeof getUserWithCustomClaims>>>
@@ -17,6 +16,7 @@ export async function getUserWithCustomClaims() {
             id,
             email,
             full_name,
+            employee_number,
             role_id (
                 id,
                 name,

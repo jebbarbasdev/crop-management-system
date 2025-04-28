@@ -41,6 +41,8 @@ export default function ForgotForm() {
                     label="Correo Electrónico"
                     error={errors.email?.message}
 
+                    disabled={isSubmitting}
+
                     {...register('email')}
                 />
 

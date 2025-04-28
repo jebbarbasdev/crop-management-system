@@ -31,6 +31,8 @@ export default function ResetForm() {
                     label="Nueva Contraseña"
                     error={errors.password?.message}
 
+                    disabled={isSubmitting}
+
                     {...register('password')}
                 />
                 
@@ -40,6 +42,8 @@ export default function ResetForm() {
 
                     label="Confirmar Contraseña"
                     error={errors.confirmPassword?.message}
+
+                    disabled={isSubmitting}
 
                     {...register('confirmPassword')}
                 />

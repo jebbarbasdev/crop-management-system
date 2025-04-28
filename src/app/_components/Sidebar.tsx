@@ -7,10 +7,9 @@ import SidebarButton from "./SidebarButton";
 
 export interface SidebarProps extends HTMLAttributes<HTMLDivElement> {
     user: UserWithCustomClaims | null,
-    currentPath: string
 }
 
-export default async function Sidebar({ className, user, currentPath, ...props }: SidebarProps) {
+export default async function Sidebar({ className, user, ...props }: SidebarProps) {
     const getSidebarButtonIcon = (slug: string) => {
         const size = 24
         switch (slug) {
@@ -42,7 +41,6 @@ export default async function Sidebar({ className, user, currentPath, ...props }
                         type="button" 
                         tooltip={module.name} 
                         href={`/${module.slug}`}
-                        active={currentPath === `/${module.slug}`}
                     >
                         {getSidebarButtonIcon(module.slug)}
                     </SidebarButton>
