@@ -4,27 +4,39 @@ import DaisyButton from "@/app/_components/DaisyButton";
 import GenericTitle from "@/app/_components/GenericTitle";
 import { IconPlus } from "@tabler/icons-react";
 import ProductsTable from "./ProductsTable";
-import { SupabaseProduct } from "../_services/getProducts";
+import { Product } from "../_services/getProducts";
 import useModal from "@/app/_hooks/useModal";
-import NewProductModal from "./NewProductModal";
+import ProductModal from "./ProductModal";
+import { useState } from "react";
+import DeleteProductModal from "./DeleteProductModal";
 
 export default function ProductsClientPage() {
-    const newProductModal = useModal()
+    const [selectedProduct, setSelectedProduct] = useState<Product | null>(null) 
 
-    const onConfigureProductByStore = (product: SupabaseProduct) => {
+    const productModal = useModal()
+    const deleteProductModal = useModal()
+
+    const handleCreateProduct = () => {
+        setSelectedProduct(null)
+        productModal.open()
+    }
+
+    const handleConfigureProductByStore = (product: Product) => {
         console.log('Configurando por tienda', product)
     }
 
-    const onConfigureProductByStorageUnit = (product: SupabaseProduct) => {
+    const handleConfigureProductByStorageUnit = (product: Product) => {
         console.log('Configurando por unidad de almacenamiento', product)
     }
 
-    const onEditProduct = (product: SupabaseProduct) => {
-        console.log('Editando', product)
+    const handleEditProduct = (product: Product) => {
+        setSelectedProduct(product)
+        productModal.open()
     }
 
-    const onDeleteProduct = (product: SupabaseProduct) => {
-        console.log('Eliminando', product)
+    const handleDeleteProduct = (product: Product) => {
+        setSelectedProduct(product)
+        deleteProductModal.open()
     }
 
     return (
@@ -37,20 +49,21 @@ export default function ProductsClientPage() {
                     tooltip="Crear Producto"
                     tooltipPlacement="left"
 
-                    onClick={newProductModal.open}
+                    onClick={handleCreateProduct}
                 >
                     <IconPlus size={24} />
                 </DaisyButton>
             </div>
 
             <ProductsTable 
-                onConfigureProductByStorageUnit={onConfigureProductByStorageUnit}
-                onConfigureProductByStore={onConfigureProductByStore}
-                onEditProduct={onEditProduct}
-                onDeleteProduct={onDeleteProduct}
+                onConfigureProductByStorageUnitClick={handleConfigureProductByStorageUnit}
+                onConfigureProductByStoreClick={handleConfigureProductByStore}
+                onEditProductClick={handleEditProduct}
+                onDeleteProductClick={handleDeleteProduct}
             />
 
-            <NewProductModal modalModel={newProductModal} />
+            <ProductModal modalModel={productModal} product={selectedProduct} />
+            <DeleteProductModal modalModel={deleteProductModal} product={selectedProduct} />
         </div>
     )
 }

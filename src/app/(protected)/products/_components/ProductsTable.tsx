@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query"
-import getProducts, { SupabaseProduct } from "../_services/getProducts"
+import getProducts, { Product } from "../_services/getProducts"
 import formatAt from "@/app/_utilities/formatAt"
 import formatBy from "@/app/_utilities/formatBy"
 import DaisyButton from "@/app/_components/DaisyButton"
@@ -7,17 +7,17 @@ import { IconBuildingStore, IconPackage, IconPencil, IconTrash } from "@tabler/i
 import TableSkeleton from "@/app/_components/TableSkeleton"
 
 export interface ProductsTableProps {
-    onConfigureProductByStore: (product: SupabaseProduct) => any
-    onConfigureProductByStorageUnit: (product: SupabaseProduct) => any
-    onEditProduct: (product: SupabaseProduct) => any
-    onDeleteProduct: (product: SupabaseProduct) => any
+    onConfigureProductByStoreClick: (product: Product) => any
+    onConfigureProductByStorageUnitClick: (product: Product) => any
+    onEditProductClick: (product: Product) => any
+    onDeleteProductClick: (product: Product) => any
 }
 
 export default function ProductsTable({
-    onConfigureProductByStore,
-    onConfigureProductByStorageUnit,
-    onEditProduct,
-    onDeleteProduct
+    onConfigureProductByStoreClick,
+    onConfigureProductByStorageUnitClick,
+    onEditProductClick,
+    onDeleteProductClick
 }: ProductsTableProps) {
     const { data: products, error, isLoading } = useQuery({ queryKey: ['products'], queryFn: getProducts })
 
@@ -56,20 +56,22 @@ export default function ProductsTable({
                                         <div className="flex gap-2 justify-center items-center">
                                             <DaisyButton
                                                 modifier="square"
+                                                variant="secondary"
                                                 tooltip="Configuración por Tienda"
                                                 tooltipPlacement="left"
 
-                                                onClick={() => onConfigureProductByStore(product)}
+                                                onClick={() => onConfigureProductByStoreClick(product)}
                                             >
                                                 <IconBuildingStore size={24} />
                                             </DaisyButton>
 
                                             <DaisyButton
                                                 modifier="square"
+                                                variant="secondary"
                                                 tooltip="Configuración por Unidad de Empaque"
                                                 tooltipPlacement="left"
 
-                                                onClick={() => onConfigureProductByStorageUnit(product)}
+                                                onClick={() => onConfigureProductByStorageUnitClick(product)}
                                             >
                                                 <IconPackage size={24} />
                                             </DaisyButton>
@@ -80,7 +82,7 @@ export default function ProductsTable({
                                                 tooltip="Editar Producto"
                                                 tooltipPlacement="left"
 
-                                                onClick={() => onEditProduct(product)}
+                                                onClick={() => onEditProductClick(product)}
                                             >
                                                 <IconPencil size={24} />
                                             </DaisyButton>
@@ -91,7 +93,7 @@ export default function ProductsTable({
                                                 tooltip="Eliminar Producto"
                                                 tooltipPlacement="left"
 
-                                                onClick={() => onDeleteProduct(product)}
+                                                onClick={() => onDeleteProductClick(product)}
                                             >
                                                 <IconTrash size={24} />
                                             </DaisyButton>

@@ -15,10 +15,10 @@
     --color-primary-content: #214F4B;
     --color-secondary: #214F4B;
     --color-secondary-content: white;
-    --color-accent: oklch(65% 0.25 160);
-    --color-accent-content: oklch(98% 0.01 160);
-    --color-neutral: oklch(50% 0.05 240);
-    --color-neutral-content: oklch(98% 0.01 240);
+    --color-accent: #A61C3C;
+    --color-accent-content: white;
+    --color-neutral: #694A38;
+    --color-neutral-content: white;
     --color-info: oklch(70% 0.2 220);
     --color-info-content: oklch(98% 0.01 220);
     --color-success: oklch(65% 0.25 140);

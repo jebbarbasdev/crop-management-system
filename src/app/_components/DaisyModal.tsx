@@ -9,14 +9,16 @@ export interface DaisyModalProps {
     modalModel: UseModalModel
     
     title: string
-    children: ReactNode
+    cancelText?: string
+    confirmText?: string
+    children?: ReactNode
 
     onSubmit?: FormEventHandler<HTMLFormElement>
 
     loading?: boolean
 }
 
-export default function DaisyModal({ modalModel: { id, close }, title, onSubmit, loading, children }: DaisyModalProps) {
+export default function DaisyModal({ modalModel: { id, close }, title, cancelText, confirmText, onSubmit, loading, children }: DaisyModalProps) {
     return (
         <dialog className="modal" id={id}>
             <div className="modal-box">
@@ -45,7 +47,7 @@ export default function DaisyModal({ modalModel: { id, close }, title, onSubmit,
                             onClick={close}
                             loading={loading}
                         >
-                            Cancelar
+                            {cancelText ?? 'Cancelar'}
                         </DaisyButton>
 
                         <DaisyButton
@@ -53,7 +55,7 @@ export default function DaisyModal({ modalModel: { id, close }, title, onSubmit,
                             type="submit"
                             loading={loading}
                         >
-                            Guardar
+                            {confirmText ?? 'Guardar'}
                         </DaisyButton>
                     </div>
                 </form>

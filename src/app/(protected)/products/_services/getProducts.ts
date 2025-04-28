@@ -1,6 +1,7 @@
 import { createSupabaseBrowserClient } from "@/app/_utilities/createSupabaseBrowserClient";
+import { FromSubapaseService } from "@/app/_utilities/FromSupabaseService";
 
-export type SupabaseProduct = Awaited<ReturnType<typeof getProducts>>[number]
+export type Product = FromSubapaseService<typeof getProducts>
 
 export default async function getProducts() {
     const supabase = await createSupabaseBrowserClient();

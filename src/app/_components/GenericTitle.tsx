@@ -2,7 +2,7 @@ import clsx from "clsx";
 import { ReactNode } from "react"
 
 export interface GenericTitleProps {
-    children: ReactNode;
+    children?: ReactNode;
     removeMargin?: boolean;
 }
 

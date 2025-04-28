@@ -1,0 +1,1 @@
+export type FromSubapaseService<T extends (...args: any[]) => any> = NonNullable<Awaited<ReturnType<T>>>[number]

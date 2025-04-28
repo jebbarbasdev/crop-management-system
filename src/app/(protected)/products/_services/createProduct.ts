@@ -1,15 +1,15 @@
 import { createSupabaseBrowserClient } from "@/app/_utilities/createSupabaseBrowserClient";
+import { TablesInsert } from "@/app/_utilities/supabase";
 
-export async function createProduct(name: string) {
+type CreateProductPayload = TablesInsert<'products'>
+
+export async function createProduct(payload: CreateProductPayload) {
     const supabase = await createSupabaseBrowserClient();
 
     const { data, error } = await supabase
         .from("products")
-        .insert([{ 
-            name
-        }])
+        .insert([payload])
         .select()
 
     if (error) throw error
-    return data
 }
