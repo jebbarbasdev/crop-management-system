@@ -1,12 +1,14 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
+import { Database } from './supabase'
+import { getUserWithCustomClaims } from '../_services/getUserWithCustomClaims'
 
 export async function updateSession(request: NextRequest) {
     let supabaseResponse = NextResponse.next({
         request,
     })
 
-    const supabase = createServerClient(
+    const supabase = createServerClient<Database>(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
         {
@@ -32,25 +34,36 @@ export async function updateSession(request: NextRequest) {
     // issues with users being randomly logged out.
 
     // IMPORTANT: DO NOT REMOVE auth.getUser()
+    // ^^^ getUserWithCustomClaims() ya usa auth.getUser, no se preocupen ^^^
 
-    const {
-        data: { user },
-    } = await supabase.auth.getUser()
-
+    const user = await getUserWithCustomClaims(supabase)
+    
     const unprotectedPaths = ['/sign-in', '/forgot-password', '/auth/callback']
     const isUnprotectedPath = unprotectedPaths.some((path) => request.nextUrl.pathname.startsWith(path))
 
     if (!user && !isUnprotectedPath) {
-        // no user, potentially respond by redirecting the user to the login page
+        // No hay usuario y quiere entrar a ruta protegida
+
         const url = request.nextUrl.clone()
-        url.pathname = '/sign-in'
+        const redirectTo = url.pathname
+
+        url.pathname = `/sign-in`
+        url.search = `?redirectTo=${encodeURIComponent(redirectTo)}`
+
         return NextResponse.redirect(url)
     }
-    else if (user && isUnprotectedPath){
-        // user exists, potentially respond by redirecting the user to the home page
-        const url = request.nextUrl.clone()
-        url.pathname = '/'
-        return NextResponse.redirect(url)
+    else if (user){
+        const hasAccessToThisModule = user.hasAnyPermissionIn(`/${request.nextUrl.pathname}`)
+        if (isUnprotectedPath || !hasAccessToThisModule) {
+            // Hay usuario, pero esta queriendo hacer una de las siguientes acciones
+            // 1. Entrar a una pagina de las del login/recover-password
+            // 2. Acceder a un modulo que no le corresponde
+
+            const url = request.nextUrl.clone()
+            url.pathname = '/'
+            return NextResponse.redirect(url)
+        } 
+
     }
 
     // IMPORTANT: You *must* return the supabaseResponse object as it is.

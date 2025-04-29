@@ -1,9 +1,12 @@
+import { SupabaseClient } from "@supabase/supabase-js";
 import { createSupabaseServerClient } from "../_utilities/createSupabaseServerClient";
+import { Database } from "../_utilities/supabase";
 
 export type UserWithCustomClaims = NonNullable<Awaited<ReturnType<typeof getUserWithCustomClaims>>>
 
-export async function getUserWithCustomClaims() {
-    const supabase = await createSupabaseServerClient()
+export async function getUserWithCustomClaims(supabase?: SupabaseClient<Database>) {
+    // Si se proporcionó un cliente, se usa ese, de lo contrario, se crea uno nuevo
+    supabase = supabase ?? await createSupabaseServerClient()
 
     const { data, error } = await supabase.auth.getUser()
     if (error) return null
