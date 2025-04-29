@@ -9,5 +9,5 @@ export const signOutAction = async () => {
     const { error } = await supabase.auth.signOut()
     if (!error) redirect('/sign-in')
 
-    return error.message
+    //return error.message
 };
