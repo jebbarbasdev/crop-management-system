@@ -2,11 +2,11 @@ import { Metadata } from 'next';
 import ResetForm from './_components/ResetForm';
 
 export const metadata: Metadata = {
-    title: "Iniciar Sesión | Crop Management System",
-    description: "Inicia Sesión en Crop Management System",
+    title: "Restablecer Contraseña | Crop Management System",
+    description: "Restablece tu contraseña en Crop Management System",
 };
 
-export default function SignInPage() {
+export default function ResetPasswordPage() {
     return (
         <ResetForm></ResetForm>
     );
