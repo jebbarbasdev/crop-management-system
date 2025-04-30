@@ -10,9 +10,6 @@ export const forgotPasswordAction = async (data: ForgotPasswordSchema) => {
     const awaitedHeaders = await headers()
     const origin = awaitedHeaders.get("origin")
     
-    console.log('Todos tus headers son: ', JSON.stringify(awaitedHeaders, null, 4))
-    console.log('Tu origen es: ', origin)
-
     const { success, data: parsedData, error: parseError } = forgotPasswordSchema.safeParse(data)
     if (!success) return parseError.message
 

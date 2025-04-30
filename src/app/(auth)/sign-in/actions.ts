@@ -5,7 +5,7 @@ import { redirect } from 'next/navigation'
 import { createSupabaseServerClient } from '@/app/_utilities/createSupabaseServerClient'
 import { SignInFormSchema, signInFormSchema } from './_models/signInFormSchema'
 
-export async function signInAction(data: SignInFormSchema) {
+export async function signInAction(data: SignInFormSchema, redirectTo: string | null) {
     const supabase = await createSupabaseServerClient()
     
     const { success, data: parsedData, error: parseError } = signInFormSchema.safeParse(data)
@@ -14,6 +14,7 @@ export async function signInAction(data: SignInFormSchema) {
     const { error } = await supabase.auth.signInWithPassword(parsedData)
     if (error) return error.message
     
+    if (redirectTo) redirect(decodeURIComponent(redirectTo))
     redirect('/')
 }
 

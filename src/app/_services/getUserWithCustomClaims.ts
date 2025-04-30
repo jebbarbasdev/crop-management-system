@@ -55,14 +55,14 @@ export async function getUserWithCustomClaims(supabase?: SupabaseClient<Database
     type Modules = Record<string, Module>
     
     const modulesWithAccess: Modules = permissionsData.reduce((acc, permission) => {
-        acc[permission.permission_id.module_id.name] ??= {
+        acc[permission.permission_id.module_id.slug] ??= {
             id: permission.permission_id.module_id.id,
             name: permission.permission_id.module_id.name,
             slug: permission.permission_id.module_id.slug,
             permissions: []
         }
 
-        acc[permission.permission_id.module_id.name].permissions.push({
+        acc[permission.permission_id.module_id.slug].permissions.push({
             id: permission.permission_id.id,
             name: permission.permission_id.name,
             description: permission.permission_id.description
@@ -75,15 +75,15 @@ export async function getUserWithCustomClaims(supabase?: SupabaseClient<Database
         ...userData,
         modulesWithAccess,
 
-        hasPermissionIn(moduleName: string, permissionName: string) {
-            const moduleRecord = this.modulesWithAccess[moduleName]
+        hasPermissionIn(moduleSlug: string, permissionName: string) {
+            const moduleRecord = this.modulesWithAccess[moduleSlug]
             if (!moduleRecord) return false
 
             return moduleRecord.permissions.some(permission => permission.name === permissionName)
         },
 
-        hasAnyPermissionIn(moduleName: string) {
-            const moduleRecord = this.modulesWithAccess[moduleName]
+        hasAnyPermissionIn(moduleSlug: string) {
+            const moduleRecord = this.modulesWithAccess[moduleSlug]
             if (!moduleRecord) return false
 
             return moduleRecord.permissions.length > 0

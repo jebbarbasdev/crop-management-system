@@ -53,7 +53,17 @@ export async function updateSession(request: NextRequest) {
         return NextResponse.redirect(url)
     }
     else if (user){
-        const hasAccessToThisModule = user.hasAnyPermissionIn(`/${request.nextUrl.pathname}`)
+        const moduleSlug = request.nextUrl.pathname.substring(1)
+        
+        // Permitiremos el acceso a la ruta en los siguientes casos:
+        // 1. Se quiere entrar al dashboard (fallback por defecto)
+        // 2. Se quiere entrar a la ruta de reset-password
+        // 3. El usuario tiene permisos para acceder a la ruta
+        const hasAccessToThisModule = 
+            moduleSlug === '' || 
+            moduleSlug === 'reset-password' ||
+            user.hasAnyPermissionIn(moduleSlug) 
+
         if (isUnprotectedPath || !hasAccessToThisModule) {
             // Hay usuario, pero esta queriendo hacer una de las siguientes acciones
             // 1. Entrar a una pagina de las del login/recover-password
@@ -63,7 +73,6 @@ export async function updateSession(request: NextRequest) {
             url.pathname = '/'
             return NextResponse.redirect(url)
         } 
-
     }
 
     // IMPORTANT: You *must* return the supabaseResponse object as it is.
