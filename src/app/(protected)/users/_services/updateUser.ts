@@ -1,3 +1,4 @@
+import { getUserWithCustomClaims } from "@/app/_services/getUserWithCustomClaims";
 import { createSupabaseBrowserClient } from "@/app/_utilities/createSupabaseBrowserClient";
 import { TablesUpdate } from "@/app/_utilities/supabase";
 
@@ -15,6 +16,9 @@ export async function updateUser({
 }: UpdateUserPayload) {
     const supabase = createSupabaseBrowserClient();
 
+    const { data: user, error: userError } = await supabase.auth.getUser()
+    if (userError) throw userError
+
     const { data, error } = await supabase
         .from('users')
         .update({
@@ -22,12 +26,15 @@ export async function updateUser({
             email,
             role_id,
             updated_at: new Date().toISOString(), 
-            updated_by 
+            updated_by
             })
         .eq('id', id); 
         console.log(updated_by);
     if (error) throw error;
     return data;
 }
+
+
+
 
 

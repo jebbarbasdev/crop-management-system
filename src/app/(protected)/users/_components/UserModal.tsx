@@ -108,13 +108,17 @@ export default function UserModal({ modalModel, user }: { modalModel: UseModalMo
   });
 
   const handleUpdateUser = async (formData: FormValues) => {
+    const supabase = await createSupabaseBrowserClient()
+    const { data: userData, error: userError } = await supabase.auth.getUser()
+    if (userError) throw userError
     const now = new Date().toISOString();
     const payload = {
       id: formData.id!,
       full_name: formData.full_name,
       email: formData.email,
       role_id: Number(formData.role_id),
-      updated_at: now
+      updated_at: now,
+      updated_by : userData.user.id
     };
     return updateUser(payload);
   };
