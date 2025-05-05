@@ -4,6 +4,9 @@ import getConfigurationByStore from "../_services/getConfigurationByStore";
 import TableSkeleton from "@/app/_components/TableSkeleton";
 import formatAt from "@/app/_utilities/formatAt";
 import formatBy from "@/app/_utilities/formatBy";
+import DaisyInput from "@/app/_components/DaisyInput";
+import { useState } from "react";
+import { ConfigurationByStoreSchema } from "../_models/configurationByStoreSchema";
 
 export interface ConfigurationByStoreTableProps {
     product: Product | null
@@ -15,6 +18,18 @@ export default function ConfigurationByStoreTable({ product }: ConfigurationBySt
         queryFn: () => getConfigurationByStore(product!.id),
         enabled: !!product
     })
+
+    const [configurationsByStore, setConfigurationsByStore] = useState<Record<string, ConfigurationByStoreSchema>>({})
+
+    const handleInputChange = (storeId: string, field: keyof ConfigurationByStoreSchema, value: string | number) => {
+        setConfigurationsByStore(prev => ({
+            ...prev,
+            [storeId]: {
+                ...prev[storeId],
+                [field]: value,
+            }
+        }))
+    }
 
     return (
         <div className="overflow-x-auto w-full border border-base-content/5 bg-base-100">
@@ -45,9 +60,27 @@ export default function ConfigurationByStoreTable({ product }: ConfigurationBySt
                             storesMetadata.map(storeMetadata => (
                                 <tr key={storeMetadata.id}>
                                     <td>{storeMetadata.name}</td>
-                                    <td>{storeMetadata.product_metadata?.sd_sku ?? '-'}</td>
-                                    <td>{storeMetadata.product_metadata?.sd_name ?? '-'}</td>
-                                    <td>{storeMetadata.product_metadata?.sd_price_by_kg ?? '-'}</td>
+                                    <td>
+                                        <DaisyInput 
+                                            type="text" 
+                                            daisySize="xs"
+                                            value={storeMetadata.product_metadata?.sd_sku} 
+                                        />
+                                    </td>
+                                    <td>
+                                        <DaisyInput
+                                            type="text" 
+                                            daisySize="xs" 
+                                            value={storeMetadata.product_metadata?.sd_name}
+                                        />
+                                    </td>
+                                    <td>
+                                        <DaisyInput
+                                            type="number"
+                                            daisySize="xs"
+                                            value={storeMetadata.product_metadata?.sd_price_by_kg}
+                                        />
+                                    </td>
                                     <td>{formatAt(storeMetadata.product_metadata?.created_at)}</td>
                                     <td>{formatBy(storeMetadata.product_metadata?.created_by)}</td>
                                     <td>{formatAt(storeMetadata.product_metadata?.updated_at)}</td>
