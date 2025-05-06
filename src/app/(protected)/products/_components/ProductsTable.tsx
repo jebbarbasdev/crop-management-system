@@ -100,7 +100,7 @@ export default function ProductsTable({
                 </div>
             )
         }
-    ], [])
+    ], [onConfigureProductByStorageUnitClick, onConfigureProductByStoreClick, onDeleteProductClick, onEditProductClick])
 
     const { data, error, isLoading } = useQuery({
         queryKey: ['products'],
