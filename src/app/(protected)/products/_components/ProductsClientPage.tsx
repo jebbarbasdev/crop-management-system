@@ -20,27 +20,27 @@ export default function ProductsClientPage() {
     const configurationByStoreModal = useModal()
     const configurationByStorageModal = useModal()
 
-    const handleCreateProduct = () => {
+    const onCreateProductClick = () => {
         setSelectedProduct(null)
         productModal.open()
     }
 
-    const handleConfigureProductByStore = (product: Product) => {
+    const onConfigureProductByStoreClick = (product: Product) => {
         setSelectedProduct(product)
         configurationByStoreModal.open()
     }
 
-    const handleConfigureProductByStorageUnit = (product: Product) => {
+    const onConfigureProductByStorageUnitClick = (product: Product) => {
         setSelectedProduct(product)
         configurationByStorageModal.open()
     }
 
-    const handleEditProduct = (product: Product) => {
+    const onEditProductClick = (product: Product) => {
         setSelectedProduct(product)
         productModal.open()
     }
 
-    const handleDeleteProduct = (product: Product) => {
+    const onDeleteProductClick = (product: Product) => {
         setSelectedProduct(product)
         deleteProductModal.open()
     }
@@ -55,23 +55,38 @@ export default function ProductsClientPage() {
                     tooltip="Crear Producto"
                     tooltipPlacement="left"
 
-                    onClick={handleCreateProduct}
+                    onClick={onCreateProductClick}
                 >
                     <IconPlus size={24} />
                 </DaisyButton>
             </div>
 
             <ProductsTable 
-                onConfigureProductByStorageUnitClick={handleConfigureProductByStorageUnit}
-                onConfigureProductByStoreClick={handleConfigureProductByStore}
-                onEditProductClick={handleEditProduct}
-                onDeleteProductClick={handleDeleteProduct}
+                onConfigureProductByStorageUnitClick={onConfigureProductByStorageUnitClick}
+                onConfigureProductByStoreClick={onConfigureProductByStoreClick}
+                onEditProductClick={onEditProductClick}
+                onDeleteProductClick={onDeleteProductClick}
             />
 
-            <ConfigurationByStoreModal modalModel={configurationByStoreModal} product={selectedProduct} />
-            <ConfigurationByStorageModal modalModel={configurationByStorageModal} product={selectedProduct} />
-            <ProductModal modalModel={productModal} product={selectedProduct} />
-            <DeleteProductModal modalModel={deleteProductModal} product={selectedProduct} />
+            <ConfigurationByStoreModal 
+                modalModel={configurationByStoreModal} 
+                product={selectedProduct}
+            />
+
+            <ConfigurationByStorageModal 
+                modalModel={configurationByStorageModal} 
+                product={selectedProduct}
+            />
+            
+            <ProductModal 
+                modalModel={productModal} 
+                product={selectedProduct} 
+            />
+
+            <DeleteProductModal 
+                modalModel={deleteProductModal} 
+                product={selectedProduct} 
+            />
         </div>
     )
 }

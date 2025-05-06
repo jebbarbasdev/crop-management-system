@@ -80,7 +80,7 @@ export default function DaisyButton({ children, loading, tooltip, tooltipPlaceme
 
     const Button = () => (
         <button
-            className={clsx(className, "btn", getSizeTailiwindClass(), getVariantTailiwindClass(), getAppearanceTailiwindClass(), getModifierTailiwindClass())}
+            className={clsx("btn", getSizeTailiwindClass(), getVariantTailiwindClass(), getAppearanceTailiwindClass(), getModifierTailiwindClass(), className)}
             disabled={loading}
 
             {...props}

@@ -1,6 +1,7 @@
 import { Metadata } from 'next';
 import GenericTitle from '../../_components/GenericTitle';
 import { getUserWithCustomClaims } from '../../_services/getUserWithCustomClaims';
+import { createSupabaseServerClient } from '../../_utilities/createSupabaseServerClient';
 import DashboardCard from './_components/DashboardCard';
 
 export const metadata: Metadata = {
@@ -9,7 +10,8 @@ export const metadata: Metadata = {
 };
 
 export default async function DashboardPage() {
-    const user = await getUserWithCustomClaims()
+    const supabase = await createSupabaseServerClient()
+    const user = await getUserWithCustomClaims(supabase)
 
     return (
         <div>
