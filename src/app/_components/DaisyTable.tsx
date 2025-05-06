@@ -69,9 +69,19 @@ export default function DaisyTable<T>({ columns, data, isLoading, error }: Daisy
             </tr>
         )
 
+        const rows = table.getRowModel().rows
+
+        if (!rows.length) return (
+            <tr>
+                <td colSpan={columns.length}>
+                    No hay registros disponibles
+                </td>
+            </tr>
+        )
+
         return (
             <> 
-                {table.getRowModel().rows.map(row => (
+                {rows.map(row => (
                     <tr key={row.id}>
                         {row.getVisibleCells().map(cell => (
                             <td key={cell.id}>

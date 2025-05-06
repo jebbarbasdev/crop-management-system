@@ -46,7 +46,7 @@ export default function DaisyInput({ label, error, color, daisySize, ghost, clas
 
             <input 
                 {...props}
-                className={clsx(className, "input w-full", { "input-error": error, "input-ghost": ghost }, getColorTailwindClassName(), getSizeTailwindClassName())}    
+                className={clsx("input w-full", { "input-error": error, "input-ghost": ghost }, getColorTailwindClassName(), getSizeTailwindClassName(), className)}    
             />
 
             {error && <p className="label text-error">{error}</p>}

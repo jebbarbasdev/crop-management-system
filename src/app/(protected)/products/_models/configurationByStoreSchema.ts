@@ -6,4 +6,9 @@ export const configurationByStoreSchema = z.object({
     sd_price_by_kg: z.number().gt(0, 'El precio por kg es obligatorio y debe ser mayor a 0'),
 })
 
+export const configurationsByStoreSchema = z.object({
+    configurations: z.array(configurationByStoreSchema).min(1, 'Al menos un producto es obligatorio')
+})
+
 export type ConfigurationByStoreSchema = z.infer<typeof configurationByStoreSchema>
+export type ConfigurationsByStoreSchema = z.infer<typeof configurationsByStoreSchema>
