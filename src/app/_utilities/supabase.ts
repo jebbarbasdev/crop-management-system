@@ -469,43 +469,46 @@ export type Database = {
       }
       users: {
         Row: {
-          created_at: string
-          created_by: string | null
-          deleted_at: string | null
-          deleted_by: string | null
-          email: string
-          employee_number: number
-          full_name: string | null
-          id: string
-          role_id: number
-          updated_at: string
-          updated_by: string | null
+          created_at: string;
+          created_by: string | null;
+          deleted_at: string | null;
+          deleted_by: string | null;
+          email: string;
+          employee_number: number;
+          full_name: string | null;
+          id: string;
+          role_id: number;
+          updated_at: string;
+          updated_by: string | null;
+          is_banned: boolean | null; // Ya está aquí
         }
         Insert: {
-          created_at?: string
-          created_by?: string | null
-          deleted_at?: string | null
-          deleted_by?: string | null
-          email: string
-          employee_number?: number
-          full_name?: string | null
-          id: string
-          role_id: number
-          updated_at?: string
-          updated_by?: string | null
+          created_at?: string;
+          created_by?: string | null;
+          deleted_at?: string | null;
+          deleted_by?: string | null;
+          email: string;
+          employee_number?: number;
+          full_name?: string | null;
+          id: string;
+          role_id: number;
+          updated_at?: string;
+          updated_by?: string | null;
+          is_banned?: boolean | null; // Asegúrate de incluirlo aquí
         }
         Update: {
-          created_at?: string
-          created_by?: string | null
-          deleted_at?: string | null
-          deleted_by?: string | null
-          email?: string
-          employee_number?: number
-          full_name?: string | null
-          id?: string
-          role_id?: number
-          updated_at?: string
-          updated_by?: string | null
+          created_at?: string;
+          created_by?: string | null;
+          deleted_at?: string | null;
+          deleted_by?: string | null;
+          email?: string;
+          employee_number?: number;
+          full_name?: string | null;
+          id?: string;
+          role_id?: number;
+          updated_at?: string;
+          updated_by?: string | null;
+          is_banned?: boolean | null; // Asegúrate de incluirlo aquí
         }
         Relationships: [
           {

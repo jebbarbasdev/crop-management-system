@@ -1,7 +1,5 @@
-import { v4 as uuidv4 } from 'uuid';
 import DaisyModal from "@/app/_components/DaisyModal";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { createUser } from "../_services/createUser";
 import { useForm } from "react-hook-form";
 import DaisyInput from "@/app/_components/DaisyInput";
 import { UseModalModel } from "@/app/_hooks/useModal";
@@ -23,10 +21,15 @@ const ROLES = [
   { id: "2", name: "Empleado de Ventas" },
   { id: "3", name: "Empleado de Pesaje" },
   { id: "4", name: "Administrador" },
-  { id: "5", name: "Empleado" }
+  { id: "5", name: "Empleado" },
 ];
 
-export default function UserModal({ modalModel, user }: { modalModel: UseModalModel, user: User | null }) {
+interface UserModalProps {
+  modalModel: UseModalModel;
+  user: User | null;
+}
+
+export default function UserModal({ modalModel, user }: UserModalProps) {
   const queryClient = useQueryClient();
   const supabase = createSupabaseBrowserClient();
   const [isLoading, setIsLoading] = useState(false);
@@ -34,61 +37,53 @@ export default function UserModal({ modalModel, user }: { modalModel: UseModalMo
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors },
     reset,
   } = useForm<FormValues>({
     defaultValues: {
-      full_name: '',
-      email: '',
-      role_id: '1', 
-    }
+      full_name: "",
+      email: "",
+      role_id: "1",
+    },
   });
 
   useEffect(() => {
     if (user) {
       reset({
         id: user.id,
-        full_name: user.full_name || '',
-        email: user.email || '',
+        full_name: user.full_name || "",
+        email: user.email || "",
         role_id: user.role_id.toString(),
       });
     }
   }, [user, reset]);
 
-  useEffect(() => {
-    const channel = supabase
-      .channel('users_changes')
-      .on('postgres_changes', {
-        event: '*',
-        schema: 'public',
-        table: 'users'
-      }, () => {
-        queryClient.invalidateQueries({ queryKey: ['users'] });
-      })
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [supabase, queryClient]);
-
   const handleCreateUser = async (formData: FormValues) => {
     setIsLoading(true);
     try {
+      // Obtén el usuario autenticado que está creando el nuevo usuario
+      const { data: currentUser, error: currentUserError } = await supabase.auth.getUser();
+      if (currentUserError) throw new Error(currentUserError.message);
+
+      const createdBy = currentUser?.user?.id;
+      if (!createdBy) throw new Error("No se pudo obtener el ID del usuario autenticado");
+
+      // Crea el usuario en la autenticación de Supabase
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: formData.email,
-        password: 'TempPass123!', 
+        password: "TempPass123!",
         options: {
           data: {
             full_name: formData.full_name,
-            role_id: Number(formData.role_id)
-          }
-        }
+            role_id: Number(formData.role_id),
+            created_by: createdBy, // Agrega el ID del usuario que crea el registro
+          },
+        },
       });
 
+      console.log("Auth Data:", authData);
       if (authError) throw new Error(authError.message);
       if (!authData.user) throw new Error("Error en registro de autenticación");
-      
     } finally {
       setIsLoading(false);
     }
@@ -103,22 +98,22 @@ export default function UserModal({ modalModel, user }: { modalModel: UseModalMo
       reset();
       modalModel.close();
       toast.success("Usuario creado exitosamente");
-      queryClient.invalidateQueries({ queryKey: ['users'] });
+      queryClient.invalidateQueries({ queryKey: ["users"] });
     },
   });
 
   const handleUpdateUser = async (formData: FormValues) => {
-    const supabase = await createSupabaseBrowserClient()
-    const { data: userData, error: userError } = await supabase.auth.getUser()
-    if (userError) throw userError
     const now = new Date().toISOString();
+    const { data: userData, error: userError } = await supabase.auth.getUser();
+    if (userError) throw userError;
+
     const payload = {
       id: formData.id!,
       full_name: formData.full_name,
       email: formData.email,
       role_id: Number(formData.role_id),
       updated_at: now,
-      updated_by : userData.user.id
+      updated_by: userData.user?.id,
     };
     return updateUser(payload);
   };
@@ -132,7 +127,7 @@ export default function UserModal({ modalModel, user }: { modalModel: UseModalMo
       reset();
       modalModel.close();
       toast.success("Usuario actualizado exitosamente");
-      queryClient.invalidateQueries({ queryKey: ['users'] });
+      queryClient.invalidateQueries({ queryKey: ["users"] });
     },
   });
 
@@ -154,21 +149,21 @@ export default function UserModal({ modalModel, user }: { modalModel: UseModalMo
         <DaisyInput
           label="Nombre completo"
           error={errors.full_name?.message}
-          {...register('full_name', { required: "Requerido" })}
+          {...register("full_name", { required: "Requerido" })}
         />
         <DaisyInput
           label="Email"
           type="email"
           error={errors.email?.message}
-          {...register('email', { 
+          {...register("email", {
             required: "Email inválido",
             pattern: {
               value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-              message: "Email inválido"
-            }
+              message: "Email inválido",
+            },
           })}
         />
-        
+
         {/* Selector de roles */}
         <div className="form-control w-full">
           <label className="label">
@@ -176,7 +171,7 @@ export default function UserModal({ modalModel, user }: { modalModel: UseModalMo
           </label>
           <select
             className="select select-bordered w-full"
-            {...register('role_id', { required: "Seleccione un rol" })}
+            {...register("role_id", { required: "Seleccione un rol" })}
           >
             {ROLES.map((role) => (
               <option key={role.id} value={role.id}>
