@@ -154,7 +154,7 @@ export default function ConfigurationByStoreModal({ modalModel, product }: Confi
             header: () => 'Actualizado Por',
             cell: ({ getValue }) => getValue()
         }
-    ], [control])
+    ], [control, product?.id])
     
     const { data, error, isLoading } = useQuery({
         queryKey: ['products', 'configurations_by_store', product?.id],
@@ -177,7 +177,7 @@ export default function ConfigurationByStoreModal({ modalModel, product }: Confi
         else {
             reset({ configurations: [] })
         }
-    }, [data, reset])
+    }, [data, reset, product])
 
     const { mutate, isPending } = useMutation({ 
         mutationFn: upsertConfigurationByStore,
