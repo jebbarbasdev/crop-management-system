@@ -29,6 +29,7 @@ export default async function getConfigurationByStorage(productId: number) {
             )
         `)
         .eq('products_storage_units.product_id', productId)
+        .is('deleted_at', null)
 
     if (error) throw error
 

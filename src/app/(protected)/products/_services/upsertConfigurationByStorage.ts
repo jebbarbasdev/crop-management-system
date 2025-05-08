@@ -2,12 +2,12 @@ import { getUserWithCustomClaims } from "@/app/_services/getUserWithCustomClaims
 import { createSupabaseBrowserClient } from "@/app/_utilities/createSupabaseBrowserClient"
 import { TablesInsert } from "@/app/_utilities/supabase"
 
-export type UpsertConfigurationByStorePayload = TablesInsert<'products_stores'> & {
+export type UpsertConfigurationByStoragePayload = TablesInsert<'products_storage_units'> & {
     product_id: number
-    store_id: number
+    storage_unit_id: number
 }
 
-export async function upsertConfigurationByStore(payload: UpsertConfigurationByStorePayload[]) {
+export async function upsertConfigurationByStorage(payload: UpsertConfigurationByStoragePayload[]) {
     const supabase = await createSupabaseBrowserClient()
     const user = await getUserWithCustomClaims(supabase)
     
@@ -21,9 +21,9 @@ export async function upsertConfigurationByStore(payload: UpsertConfigurationByS
     }))
 
     const { error } = await supabase
-        .from('products_stores')
+        .from('products_storage_units')
         .upsert(records, {
-            onConflict: 'product_id,store_id'
+            onConflict: 'product_id,storage_unit_id'
         })
         .select()
 

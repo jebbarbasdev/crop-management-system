@@ -130,7 +130,7 @@ export default function DaisyTable<T>({ columns, data, isLoading, error }: Daisy
                                 {headerGroup.headers.map(header => (
                                     <th key={header.id} colSpan={header.colSpan}>
                                         <div
-                                            className={clsx(header.column.getCanSort() && 'cursor-pointer flex items-center justify-center gap-2')}                                            
+                                            className={clsx('select-none', header.column.getCanSort() && 'cursor-pointer flex items-center justify-center gap-2')}                                            
                                             onClick={header.column.getToggleSortingHandler()}
                                         >
                                             {flexRender(header.column.columnDef.header, header.getContext())}

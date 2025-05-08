@@ -11,16 +11,20 @@ export interface DaisyModalProps {
     size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl'
 
     title: string
-    cancelText?: string
-    confirmText?: string
     children?: ReactNode
 
+    showConfirmButton?: boolean
+    confirmText?: string
+
+    showCancelButton?: boolean
+    cancelText?: string
+    
     onSubmit?: FormEventHandler<HTMLFormElement>
 
     loading?: boolean
 }
 
-export default function DaisyModal({ modalModel: { id, close }, size, title, cancelText, confirmText, onSubmit, loading, children }: DaisyModalProps) {
+export default function DaisyModal({ modalModel: { id, close }, size, title, cancelText, confirmText, onSubmit, loading, children, showCancelButton = true, showConfirmButton = true }: DaisyModalProps) {
     const getSizeTailwindClass = () => {
         switch (size) {
             case 'xs': return 'max-w-xl'
@@ -52,25 +56,31 @@ export default function DaisyModal({ modalModel: { id, close }, size, title, can
 
                     {children}
 
-                    <div className="modal-action">
-                        <DaisyButton
-                            variant="secondary"
-                            appearance="outline"
-                            type="button"
-                            onClick={close}
-                            loading={loading}
-                        >
-                            {cancelText ?? 'Cancelar'}
-                        </DaisyButton>
+                    {(showCancelButton || showConfirmButton) && (
+                        <div className="modal-action">
+                            {showCancelButton && (
+                                    <DaisyButton
+                                        variant="secondary"
+                                        appearance="outline"
+                                        type="button"
+                                        onClick={close}
+                                    loading={loading}
+                                >
+                                    {cancelText ?? 'Cancelar'}
+                                </DaisyButton>
+                            )}
 
-                        <DaisyButton
-                            variant="primary"
-                            type="submit"
-                            loading={loading}
-                        >
-                            {confirmText ?? 'Guardar'}
-                        </DaisyButton>
-                    </div>
+                            {showConfirmButton && (
+                                <DaisyButton
+                                    variant="primary"
+                                    type="submit"
+                                    loading={loading}
+                                >
+                                    {confirmText ?? 'Guardar'}
+                                </DaisyButton>
+                            )}
+                        </div>
+                    )}
                 </form>
             </div>
             <form method="dialog" className="modal-backdrop">
