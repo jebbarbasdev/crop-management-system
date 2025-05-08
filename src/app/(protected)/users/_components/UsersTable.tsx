@@ -115,8 +115,7 @@ export default function UsersTable() {
             header: () => "Creado Por",
             cell: ({ row }) =>
                 row.original.created_by
-                    ? userNames[row.original.created_by] || row.original.created_by
-                    : "No especificado",
+                    ? userNames[row.original.created_by] : "Sistema",
         },
         {
             accessorKey: "updated_at",
@@ -129,8 +128,7 @@ export default function UsersTable() {
             header: () => "Modificado Por",
             cell: ({ row }) =>
                 row.original.updated_by
-                    ? userNames[row.original.updated_by] || row.original.updated_by
-                    : "No modificado",
+                    ? userNames[row.original.updated_by] : "No modificado",
         },
         {
             id: "actions",

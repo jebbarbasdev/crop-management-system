@@ -82,7 +82,7 @@ export default function StorageUnitsTable({
         {
             accessorKey: 'created_by',
             header: () => 'Creado Por',
-            cell: ({ row }) => userNames[row.original.created_by] || row.original.created_by,
+            cell: ({ row }) => userNames[row.original.created_by],
         },
         {
             accessorKey: 'updated_at',
@@ -93,7 +93,7 @@ export default function StorageUnitsTable({
             accessorKey: 'updated_by',
             header: () => 'Actualizado Por',
             cell: ({ row }) => row.original.updated_by ? 
-                (userNames[row.original.updated_by] || row.original.updated_by) : '',
+                (userNames[row.original.updated_by] ) : '',
         },
         {
             id: 'actions',
