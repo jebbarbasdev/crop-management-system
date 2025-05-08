@@ -61,14 +61,12 @@ export default function UserModal({ modalModel, user }: UserModalProps) {
   const handleCreateUser = async (formData: FormValues) => {
     setIsLoading(true);
     try {
-      // Obtén el usuario autenticado que está creando el nuevo usuario
       const { data: currentUser, error: currentUserError } = await supabase.auth.getUser();
       if (currentUserError) throw new Error(currentUserError.message);
 
       const createdBy = currentUser?.user?.id;
       if (!createdBy) throw new Error("No se pudo obtener el ID del usuario autenticado");
 
-      // Crea el usuario en la autenticación de Supabase
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: formData.email,
         password: "TempPass123!",
@@ -76,7 +74,7 @@ export default function UserModal({ modalModel, user }: UserModalProps) {
           data: {
             full_name: formData.full_name,
             role_id: Number(formData.role_id),
-            created_by: createdBy, // Agrega el ID del usuario que crea el registro
+            created_by: createdBy, 
           },
         },
       });

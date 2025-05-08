@@ -1,5 +1,16 @@
-export default function StorageUnitsPage() {
+import { Metadata } from "next";
+import QueryProvider from "@/app/_providers/QueryProvider";
+import StorageUnitsClientPage from "./_components/StorageUnitsClientPage";
+
+export const metadata: Metadata = {
+    title: "Usuarios | Crop Management System",
+    description: "Página de Usuarios de Crop Management System",
+};
+
+export default function ClientPage() {
     return (
-        <h1>Unidades de Empaque</h1>
+        <QueryProvider>
+            <StorageUnitsClientPage />
+        </QueryProvider>
     )
 }

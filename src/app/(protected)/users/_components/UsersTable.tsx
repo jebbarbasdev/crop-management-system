@@ -2,131 +2,168 @@ import { useQuery } from "@tanstack/react-query";
 import getUsers, { User } from "../_services/getUsers";
 import DaisyButton from "@/app/_components/DaisyButton";
 import { IconPencil, IconUserOff, IconUserCheck } from "@tabler/icons-react";
+import { ColumnDef } from "@tanstack/react-table";
+import DaisyTable from "@/app/_components/DaisyTable";
+import { useMemo, useState, useEffect } from "react";
 import useModal from "@/app/_hooks/useModal";
-import { useState } from "react";
 import UserModal from "./UserModal";
 import BanUserModal from "./BanUserModal";
+import { createSupabaseBrowserClient } from "@/app/_utilities/createSupabaseBrowserClient";
 
 export default function UsersTable() {
-  const { data: users, error, isLoading } = useQuery({
-    queryKey: ["users"],
-    queryFn: getUsers,
-    refetchOnWindowFocus: false,
-  });
+    const { data: users, error, isLoading } = useQuery({
+        queryKey: ["users"],
+        queryFn: getUsers,
+        refetchOnWindowFocus: false,
+    });
 
-  const userModal = useModal(); 
-  const banUserModal = useModal(); 
-  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+    const userModal = useModal();
+    const banUserModal = useModal();
+    const [selectedUser, setSelectedUser] = useState<User | null>(null);
+    const [userNames, setUserNames] = useState<Record<string, string>>({});
 
-  const handleEditClick = (user: User) => {
-    setSelectedUser(user);
-    userModal.open();
-  };
+    const handleEditClick = (user: User) => {
+        setSelectedUser(user);
+        userModal.open();
+    };
 
-  const handleBanClick = (user: User) => {
-    setSelectedUser(user);
-    banUserModal.open();
-  };
+    const handleBanClick = (user: User) => {
+        setSelectedUser(user);
+        banUserModal.open();
+    };
 
-  return (
-    <div className="overflow-x-auto w-full border border-base-content/5 bg-base-100 rounded-box">
-      <table className="table table-zebra table-pin-rows text-center whitespace-nowrap">
-        <thead>
-          <tr className="bg-primary text-primary-content">
-            <th>Nombre</th>
-            <th>Email</th>
-            <th>N° Empleado</th>
-            <th>Rol</th>
-            <th>Estado</th>
-            <th>Creado en</th>
-            <th>Creado por</th>
-            <th>Modificado en</th>
-            <th>Modificado por</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          {isLoading ? (
-            <tr>
-              <td colSpan={10}>Cargando...</td>
-            </tr>
-          ) : error ? (
-            <tr>
-              <td colSpan={10}>Error al cargar los usuarios</td>
-            </tr>
-          ) : users && users.length > 0 ? (
-            users.map((user) => (
-              <tr key={user.id}>
-                <td>{user.full_name || "Sin nombre"}</td>
-                <td>{user.email}</td>
-                <td>{user.employee_number}</td>
-                <td>{user.roles?.name || "Sin rol"}</td>
-                <td>
-                  <span className={`badge ${user.is_banned ? "badge-error" : "badge-success"}`}>
-                    {user.is_banned ? "Suspendido" : "Activo"}
-                  </span>
-                </td>
-                <td>{new Date(user.created_at).toLocaleDateString()}</td>
-                <td>
-                  {user.created_by_user ? (
-           <div className="flex flex-col">
-                                        <span>{user.created_by_user.full_name || "Usuario"}</span>
-                                        <span className="text-xs opacity-70">
-                                          #{user.created_by_user.employee_number}
-                                        </span>
-                                      </div>
-                  ) : (
-                    "Sistema"
-                  )}
-                </td>
-                <td>{new Date(user.updated_at).toLocaleDateString()}</td>
-                <td>
-                  {user.updated_by_user ? (
-                    <div className="flex flex-col">
-                      <span>{user.updated_by_user.full_name || "Usuario"}</span>
-                      <span className="text-xs opacity-70">
-                        #{user.updated_by_user.employee_number}
-                      </span>
-                    </div>
-                  ) : (
-                    "No modificado"
-                  )}
-                </td>
-                <td>
-                  <div className="flex gap-2 justify-center">
+    // Cargar nombres de usuarios relacionados
+    useEffect(() => {
+        async function loadUserNames() {
+            if (!users || users.length === 0) return;
+
+            const supabase = createSupabaseBrowserClient();
+
+            // Extraer IDs únicos de usuarios relacionados
+            const userIds = new Set<string>();
+            users.forEach((user) => {
+                if (user.created_by) userIds.add(user.created_by);
+                if (user.updated_by) userIds.add(user.updated_by);
+            });
+
+            if (userIds.size === 0) return;
+
+            try {
+                const { data: userData, error: userError } = await supabase
+                    .from("users")
+                    .select("id, full_name")
+                    .in("id", Array.from(userIds));
+
+                if (userError) {
+                    console.error("Error al obtener datos de usuarios:", userError.message);
+                    return;
+                }
+
+                if (userData && userData.length > 0) {
+                    const nameMap: Record<string, string> = {};
+                    userData.forEach((user) => {
+                        nameMap[user.id] = user.full_name || user.id;
+                    });
+                    setUserNames(nameMap);
+                }
+            } catch (err) {
+                console.error("Error al procesar datos de usuario:", err);
+            }
+        }
+
+        loadUserNames();
+    }, [users]);
+
+    // Definir las columnas de la tabla
+    const columns: ColumnDef<User>[] = useMemo(() => [
+        {
+            accessorKey: "full_name",
+            header: () => "Nombre",
+            cell: ({ getValue }) => getValue() || "Sin nombre",
+        },
+        {
+            accessorKey: "email",
+            header: () => "Email",
+            cell: ({ getValue }) => getValue(),
+        },
+        {
+            accessorKey: "employee_number",
+            header: () => "N° Empleado",
+            cell: ({ getValue }) => getValue() || "N/A",
+        },
+        {
+            accessorKey: "roles.name",
+            header: () => "Rol",
+            cell: ({ row }) => row.original.roles?.name || "Sin rol",
+        },
+        {
+            accessorKey: "is_banned",
+            header: () => "Estado",
+            cell: ({ getValue }) => (
+                <span className={`badge ${getValue() ? "badge-error" : "badge-success"}`}>
+                    {getValue() ? "Suspendido" : "Activo"}
+                </span>
+            ),
+        },
+        {
+            accessorKey: "created_at",
+            header: () => "Creado En",
+            cell: ({ getValue }) => new Date(getValue<string>()).toLocaleDateString(),
+        },
+        {
+            accessorKey: "created_by",
+            header: () => "Creado Por",
+            cell: ({ row }) =>
+                row.original.created_by
+                    ? userNames[row.original.created_by] || row.original.created_by
+                    : "No especificado",
+        },
+        {
+            accessorKey: "updated_at",
+            header: () => "Modificado En",
+            cell: ({ getValue }) =>
+                getValue() ? new Date(getValue<string>()).toLocaleDateString() : "No modificado",
+        },
+        {
+            accessorKey: "updated_by",
+            header: () => "Modificado Por",
+            cell: ({ row }) =>
+                row.original.updated_by
+                    ? userNames[row.original.updated_by] || row.original.updated_by
+                    : "No modificado",
+        },
+        {
+            id: "actions",
+            header: () => "Acciones",
+            cell: ({ row }) => (
+                <div className="flex gap-2 justify-center">
                     <DaisyButton
-                      variant="warning"
-                      modifier="square"
-                      tooltip="Editar Usuario"
-                      onClick={() => handleEditClick(user)}
+                        variant="warning"
+                        modifier="square"
+                        tooltip="Editar Usuario"
+                        onClick={() => handleEditClick(row.original)}
                     >
-                      <IconPencil size={20} />
+                        <IconPencil size={20} />
                     </DaisyButton>
                     <DaisyButton
-                      variant={user.is_banned ? "success" : "error"}
-                      modifier="square"
-                      tooltip={user.is_banned ? "Reactivar Usuario" : "Suspender Usuario"}
-                      onClick={() => handleBanClick(user)}
+                        variant={row.original.is_banned ? "success" : "error"}
+                        modifier="square"
+                        tooltip={row.original.is_banned ? "Reactivar Usuario" : "Suspender Usuario"}
+                        onClick={() => handleBanClick(row.original)}
                     >
-                      {user.is_banned ? <IconUserCheck size={20} /> : <IconUserOff size={20} />}
+                        {row.original.is_banned ? <IconUserCheck size={20} /> : <IconUserOff size={20} />}
                     </DaisyButton>
-                  </div>
-                </td>
-              </tr>
-            ))
-          ) : (
-            <tr>
-              <td colSpan={10}>No hay usuarios registrados</td>
-            </tr>
-          )}
-        </tbody>
-      </table>
+                </div>
+            ),
+        },
+    ], [userNames]);
 
-      
-      <UserModal modalModel={userModal} user={selectedUser} />
+    return (
+        <>
+            <DaisyTable columns={columns} data={users ?? []} isLoading={isLoading} error={error} />
 
-  
-      <BanUserModal modalModel={banUserModal} user={selectedUser} />
-    </div>
-  );
+            <UserModal modalModel={userModal} user={selectedUser} />
+            <BanUserModal modalModel={banUserModal} user={selectedUser} />
+        </>
+    );
 }
