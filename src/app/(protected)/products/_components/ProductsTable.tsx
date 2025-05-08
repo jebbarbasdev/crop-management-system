@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query"
 import getProducts, { Product } from "../_services/getProducts"
 import formatAt from "@/app/_utilities/formatAt"
-import formatBy, { FormatByTarget } from "@/app/_utilities/formatBy"
+import formatBy from "@/app/_utilities/formatBy"
 import DaisyButton from "@/app/_components/DaisyButton"
 import { IconBuildingStore, IconPackage, IconPencil, IconTrash } from "@tabler/icons-react"
 import { ColumnDef } from "@tanstack/react-table"

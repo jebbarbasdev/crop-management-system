@@ -1,7 +1,7 @@
 import DaisyModal from "@/app/_components/DaisyModal";
 import { UseModalModel } from "@/app/_hooks/useModal";
 import { Product } from "../_services/getProducts";
-import { Control, Controller, useController, useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ConfigurationByStoreSchema, ConfigurationsByStoreSchema, configurationsByStoreSchema } from "../_models/configurationByStoreSchema";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -186,7 +186,6 @@ export default function ConfigurationByStoreModal({ modalModel, product }: Confi
         },
         onSuccess: () => {
             toast.success(`Configuraciones por tienda creadas con éxito`)
-            modalModel.close()
             queryClient.invalidateQueries({ queryKey: ['products', 'configurations_by_store', product?.id] })
         }
     })

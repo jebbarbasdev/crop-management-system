@@ -31,6 +31,7 @@ export default async function getConfigurationsByStore(productId: number) {
             )
         `)
         .eq('products_stores.product_id', productId)
+        .is('deleted_at', null)
 
     if (error) throw error
 
