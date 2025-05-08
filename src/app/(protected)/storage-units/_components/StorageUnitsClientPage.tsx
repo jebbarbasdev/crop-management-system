@@ -1,5 +1,4 @@
 'use client';
-
 import DaisyButton from "@/app/_components/DaisyButton";
 import GenericTitle from "@/app/_components/GenericTitle";
 import { IconPlus } from "@tabler/icons-react";
@@ -9,6 +8,7 @@ import useModal from "@/app/_hooks/useModal";
 import { useState } from "react";
 import StorageUnitModal from "../_components/StorageUnitModal";
 import DeleteStorageUnitModal from "../_components/DeleteStorageUnitModal";
+import StorageUnitStoreWeightsModal from "../_components/StorageUnitStoreWeightsModal";
 import createStorageUnit from "../_services/createStorageUnit";
 import updateStorageUnit from "../_services/updateStorageUnit";
 import deleteStorageUnit from "../_services/deleteStorageUnit"; 
@@ -20,9 +20,10 @@ const supabase = createSupabaseBrowserClient();
 
 export default function StorageUnitsClientPage() {
     const [selectedStorageUnit, setSelectedStorageUnit] = useState<StorageUnit | null>(null);
-
+    const [selectedStorageUnitForWeights, setSelectedStorageUnitForWeights] = useState<StorageUnit | null>(null); 
     const storageUnitModal = useModal();
     const deleteStorageUnitModal = useModal();
+    const weightsModal = useModal(); 
     const queryClient = useQueryClient();
 
     const handleCreateStorageUnit = async (name: string) => {
@@ -134,6 +135,11 @@ export default function StorageUnitsClientPage() {
         deleteStorageUnitModal.open();
     };
 
+    const onConfigureWeightsClick = (storageUnit: StorageUnit) => {
+        setSelectedStorageUnitForWeights(storageUnit);
+        weightsModal.open();
+    };
+
     return (
         <div>
             <div className="flex justify-between items-center mb-4">
@@ -152,6 +158,7 @@ export default function StorageUnitsClientPage() {
             <StorageUnitsTable
                 onEditStorageUnitClick={onEditStorageUnitClick}
                 onDeleteStorageUnitClick={onDeleteStorageUnitClick}
+                onConfigureWeightsClick={onConfigureWeightsClick} 
             />
 
             <StorageUnitModal
@@ -174,6 +181,11 @@ export default function StorageUnitsClientPage() {
                         handleDeleteStorageUnit(selectedStorageUnit.id);
                     }
                 }}
+            />
+
+            <StorageUnitStoreWeightsModal
+                modalModel={weightsModal}
+                storageUnit={selectedStorageUnitForWeights} 
             />
         </div>
     );

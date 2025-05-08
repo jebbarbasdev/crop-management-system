@@ -3,7 +3,7 @@ import QueryProvider from "@/app/_providers/QueryProvider";
 import StorageUnitsClientPage from "./_components/StorageUnitsClientPage";
 
 export const metadata: Metadata = {
-    title: "Usuarios | Crop Management System",
+    title: "Unidades de Empaque | Crop Management System",
     description: "Página de Usuarios de Crop Management System",
 };
 
