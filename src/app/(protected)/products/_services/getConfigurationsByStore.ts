@@ -1,9 +1,9 @@
 import { createSupabaseBrowserClient } from "@/app/_utilities/createSupabaseBrowserClient";
 import { FromSubapaseService } from "@/app/_utilities/FromSupabaseService";
 
-export type ConfigurationByStore = FromSubapaseService<typeof getConfigurationByStore>
+export type ConfigurationByStore = FromSubapaseService<typeof getConfigurationsByStore>
 
-export default async function getConfigurationByStore(productId: number) {
+export default async function getConfigurationsByStore(productId: number) {
     const supabase = await createSupabaseBrowserClient();
 
     const { data, error } = await supabase

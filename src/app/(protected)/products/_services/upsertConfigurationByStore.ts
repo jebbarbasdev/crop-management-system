@@ -7,36 +7,23 @@ export type UpsertConfigurationByStorePayload = TablesInsert<'products_stores'> 
     store_id: number
 }
 
-export async function upsertConfigurationByStore(payload: UpsertConfigurationByStorePayload) {
+export async function upsertConfigurationByStore(payload: UpsertConfigurationByStorePayload[]) {
     const supabase = await createSupabaseBrowserClient()
     const user = await getUserWithCustomClaims(supabase)
     
-    // First check if record exists
-    const { data: existing } = await supabase
-        .from('products_stores')
-        .select('*')
-        .eq('product_id', payload.product_id)
-        .eq('store_id', payload.store_id)
-        .single()
-
     const now = new Date().toISOString()
+
+    const records = payload.map(record => ({
+        ...record,
+        
+        updated_at: now,
+        updated_by: user?.id
+    }))
 
     const { error } = await supabase
         .from('products_stores')
-        .upsert({
-            product_id: payload.product_id,
-            store_id: payload.store_id,
-            sd_sku: payload.sd_sku,
-            sd_name: payload.sd_name,
-            sd_price_by_kg: payload.sd_price_by_kg,
-            // Only set created fields if record doesn't exist
-            ...(!existing && {
-                created_at: now,
-                created_by: user?.id
-            }),
-            // Always update these fields
-            updated_at: now,
-            updated_by: user?.id
+        .upsert(records, {
+            onConflict: 'product_id,store_id'
         })
         .select()
 
