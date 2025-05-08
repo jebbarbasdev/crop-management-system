@@ -7,6 +7,31 @@ export type Json =
   | Json[]
 
 export type Database = {
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          operationName?: string
+          query?: string
+          variables?: Json
+          extensions?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
   public: {
     Tables: {
       branches: {
@@ -351,6 +376,68 @@ export type Database = {
           },
         ]
       }
+      storage_unit_store_weights: {
+        Row: {
+          created_at: string | null
+          created_by: string
+          id: number
+          storage_unit_id: number
+          store_id: number
+          updated_at: string | null
+          updated_by: string
+          weight_by_unit: number
+        }
+        Insert: {
+          created_at?: string | null
+          created_by: string
+          id?: number
+          storage_unit_id: number
+          store_id: number
+          updated_at?: string | null
+          updated_by: string
+          weight_by_unit: number
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string
+          id?: number
+          storage_unit_id?: number
+          store_id?: number
+          updated_at?: string | null
+          updated_by?: string
+          weight_by_unit?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "storage_unit_store_weights_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "storage_unit_store_weights_storage_unit_id_fkey"
+            columns: ["storage_unit_id"]
+            isOneToOne: false
+            referencedRelation: "storage_units"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "storage_unit_store_weights_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "storage_unit_store_weights_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       storage_units: {
         Row: {
           created_at: string
@@ -414,6 +501,7 @@ export type Database = {
           deleted_at: string | null
           deleted_by: string | null
           id: number
+          legal_name: string
           name: string
           rfc: string
           updated_at: string
@@ -426,6 +514,7 @@ export type Database = {
           deleted_at?: string | null
           deleted_by?: string | null
           id?: number
+          legal_name: string
           name: string
           rfc: string
           updated_at?: string
@@ -438,6 +527,7 @@ export type Database = {
           deleted_at?: string | null
           deleted_by?: string | null
           id?: number
+          legal_name?: string
           name?: string
           rfc?: string
           updated_at?: string
@@ -469,46 +559,46 @@ export type Database = {
       }
       users: {
         Row: {
-          created_at: string;
-          created_by: string | null;
-          deleted_at: string | null;
-          deleted_by: string | null;
-          email: string;
-          employee_number: number;
-          full_name: string | null;
-          id: string;
-          role_id: number;
-          updated_at: string;
-          updated_by: string | null;
-          is_banned: boolean | null; // Ya está aquí
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          deleted_by: string | null
+          email: string
+          employee_number: number
+          full_name: string | null
+          id: string
+          is_banned: boolean | null
+          role_id: number
+          updated_at: string
+          updated_by: string | null
         }
         Insert: {
-          created_at?: string;
-          created_by?: string | null;
-          deleted_at?: string | null;
-          deleted_by?: string | null;
-          email: string;
-          employee_number?: number;
-          full_name?: string | null;
-          id: string;
-          role_id: number;
-          updated_at?: string;
-          updated_by?: string | null;
-          is_banned?: boolean | null; // Asegúrate de incluirlo aquí
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
+          email: string
+          employee_number?: number
+          full_name?: string | null
+          id: string
+          is_banned?: boolean | null
+          role_id: number
+          updated_at?: string
+          updated_by?: string | null
         }
         Update: {
-          created_at?: string;
-          created_by?: string | null;
-          deleted_at?: string | null;
-          deleted_by?: string | null;
-          email?: string;
-          employee_number?: number;
-          full_name?: string | null;
-          id?: string;
-          role_id?: number;
-          updated_at?: string;
-          updated_by?: string | null;
-          is_banned?: boolean | null; // Asegúrate de incluirlo aquí
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
+          email?: string
+          employee_number?: number
+          full_name?: string | null
+          id?: string
+          is_banned?: boolean | null
+          role_id?: number
+          updated_at?: string
+          updated_by?: string | null
         }
         Relationships: [
           {
@@ -649,6 +739,9 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {},
   },
