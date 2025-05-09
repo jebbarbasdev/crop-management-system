@@ -554,7 +554,7 @@ export type Database = {
           role_id: number;
           updated_at?: string;
           updated_by?: string | null;
-          is_banned?: boolean | null; // Asegúrate de incluirlo aquí
+          is_banned?: boolean | null; 
         }
         Update: {
           created_at?: string;
@@ -568,7 +568,7 @@ export type Database = {
           role_id?: number;
           updated_at?: string;
           updated_by?: string | null;
-          is_banned?: boolean | null; // Asegúrate de incluirlo aquí
+          is_banned?: boolean | null; 
         }
         Relationships: [
           {

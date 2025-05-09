@@ -115,7 +115,7 @@ export default function StorageUnitStoreWeightsModal({
       queryClient.invalidateQueries({
         queryKey: ["storage_unit_store_weights"],
       });
-      modalModel.close();
+      // Eliminada la línea modalModel.close() para que el modal permanezca abierto
     },
     onError: (error) => {
       toast.error(`Error al guardar: ${error.message}`);
