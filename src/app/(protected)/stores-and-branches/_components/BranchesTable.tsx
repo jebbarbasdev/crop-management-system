@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query"
-import getStores, { Store } from "../_services/getStores"
+import { Store } from "../_services/getStores"
 import formatAt from "@/app/_utilities/formatAt"
 import formatBy from "@/app/_utilities/formatBy"
 import DaisyButton from "@/app/_components/DaisyButton"
@@ -7,37 +7,28 @@ import { IconPencil, IconTrash } from "@tabler/icons-react"
 import { ColumnDef } from "@tanstack/react-table"
 import DaisyTable from "@/app/_components/DaisyTable"
 import { useMemo } from "react"
+import getBranches, { Branch } from "../_services/getBranches"
 
-export interface StoresTableProps {
-    onSelectStore: (store: Store|null) => any
-    onEditStoreClick: (store: Store) => any
-    onDeleteStoreClick: (store: Store) => any
+export interface BranchesTableProps {
+    store: Store|null
+    onEditBranchClick: (branch: Branch) => any
+    onDeleteBranchClick: (branch: Branch) => any
 }
 
-export default function StoresTable({
-    onSelectStore,
-    onEditStoreClick,
-    onDeleteStoreClick
-}: StoresTableProps) {
-    const columns: ColumnDef<Store>[] = useMemo(() => [
+export default function BranchesTable({
+    store,
+    onEditBranchClick,
+    onDeleteBranchClick
+}: BranchesTableProps) {
+    const columns: ColumnDef<Branch>[] = useMemo(() => [
         {
-            accessorKey: 'name',
+            accessorKey: 'sd_name',
             header: () => 'Nombre',
             cell: ({ getValue }) => getValue()
         },
         {
-            accessorKey: 'legal_name',
-            header: () => 'Razón Social',
-            cell: ({ getValue }) => getValue()
-        },
-        {
-            accessorKey: 'rfc',
-            header: () => 'RFC',
-            cell: ({ getValue }) => getValue()
-        },
-        {
-            accessorKey: 'address',
-            header: () => 'Dirección',
+            accessorKey: 'sd_number',
+            header: () => 'Número de Sucursal',
             cell: ({ getValue }) => getValue()
         },
         {
@@ -70,10 +61,10 @@ export default function StoresTable({
                     <DaisyButton
                         variant="warning"
                         modifier="square"
-                        tooltip="Editar Tienda"
+                        tooltip="Editar Sucursal"
                         tooltipPlacement="left"
 
-                        onClick={() => onEditStoreClick(row.original)}
+                        onClick={() => onEditBranchClick(row.original)}
                     >
                         <IconPencil size={24} />
                     </DaisyButton>
@@ -81,27 +72,25 @@ export default function StoresTable({
                     <DaisyButton
                         variant="error"
                         modifier="square"
-                        tooltip="Eliminar Tienda"
+                        tooltip="Eliminar Sucursal"
                         tooltipPlacement="left"
 
-                        onClick={() => onDeleteStoreClick(row.original)}
+                        onClick={() => onDeleteBranchClick(row.original)}
                     >
                         <IconTrash size={24} />
                     </DaisyButton>
                 </div>
             )
         }
-    ], [onEditStoreClick, onDeleteStoreClick])
+    ], [onEditBranchClick, onDeleteBranchClick])
 
     const { data, error, isLoading } = useQuery({
-        queryKey: ['stores'],
-        queryFn: getStores
+        queryKey: ['branches', store?.id],
+        queryFn: () => getBranches(store!.id),
+        enabled: !!store
     })
 
-    const onSelectionChange = (selectedStores: Store[]) => {
-        if (selectedStores.length) onSelectStore(selectedStores[0])
-        else onSelectStore(null)
-    }
+    console.log(data)
 
     return (
         <DaisyTable 
@@ -109,9 +98,6 @@ export default function StoresTable({
             data={data ?? []} 
             isLoading={isLoading} 
             error={error} 
-            selection="single"
-
-            onSelectionChange={onSelectionChange}
         />
     )
 }

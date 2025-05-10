@@ -9,11 +9,16 @@ import useModal from "@/app/_hooks/useModal";
 import StoreModal from "./StoreModal";
 import { useState } from "react";
 import clsx from "clsx";
+import DeleteStoreModal from "./DeleteStoreModal";
+import BranchesTable from "./BranchesTable";
+import { Branch } from "../_services/getBranches";
 //import DeleteProductModal from "./DeleteProductModal";
 
 export default function StoresAndBranchesClientPage() {
-    const [selectedStore, setSelectedStore] = useState<Store | null>(null) 
-    const [selectedBranch, setSelectedBranch] = useState(null)
+    const [selectedStore, setSelectedStore] = useState<Store|null>(null) 
+    const [storeToBranch, setStoreToBranch] = useState<Store|null>(null)
+
+    const [selectedBranch, setSelectedBranch] = useState<Branch|null>(null)
 
     const storeModal = useModal()
     const deleteStoreModal = useModal()
@@ -26,8 +31,8 @@ export default function StoresAndBranchesClientPage() {
         storeModal.open()
     }
 
-    const onManageBranchesClick = (store: Store) => {
-        setSelectedStore(store)
+    const onSelectStore = (store: Store|null) => {
+        setStoreToBranch(store)
     }
 
     const onEditStoreClick = (store: Store) => {
@@ -40,27 +45,27 @@ export default function StoresAndBranchesClientPage() {
         deleteStoreModal.open()
     }
 
-    // const onCreateBranchClick = () => {
-    //     setSelectedBranch(null)
-    //     branchModal.open()
-    // }
+    const onCreateBranchClick = () => {
+        setSelectedBranch(null)
+        branchModal.open()
+    }
 
-    // const onEditBranchClick = (branch: Store) => {
-    //     setSelectedBranch(branch)
-    //     branchModal.open()
-    // }
+    const onEditBranchClick = (branch: Branch) => {
+        setSelectedBranch(branch)
+        branchModal.open()
+    }
 
-    // const onDeleteBranchClick = (branch: Store) => {
-    //     setSelectedBranch(branch)
-    //     deleteBranchModal.open()
-    // }
+    const onDeleteBranchClick = (branch: Branch) => {
+        setSelectedBranch(branch)
+        deleteBranchModal.open()
+    }
 
     return (
         <div>
-            <div className="grid gap-4 grid-cols-1 xl:grid-cols-2">
+            <div className="grid gap-4 grid-cols-1 2xl:grid-cols-2">
                 <div>
                     <div className="flex justify-between items-center mb-4">
-                        <GenericTitle removeMargin>Tiendas</GenericTitle>
+                        <GenericTitle removeMargin subtitle="">Tiendas</GenericTitle>
                         
                         <DaisyButton
                             variant="primary"
@@ -75,7 +80,7 @@ export default function StoresAndBranchesClientPage() {
                     </div>
 
                     <StoresTable               
-                        onManageBranchesClick={onManageBranchesClick}
+                        onSelectStore={onSelectStore}
                         onEditStoreClick={onEditStoreClick}
                         onDeleteStoreClick={onDeleteStoreClick}
                     />
@@ -85,47 +90,37 @@ export default function StoresAndBranchesClientPage() {
                         store={selectedStore}
                     />
 
-                    {/* <ConfigurationByStoreModal 
-                        modalModel={configurationByStoreModal} 
-                        product={selectedStore}
+                    <DeleteStoreModal
+                        modalModel={deleteStoreModal}
+                        store={selectedStore}
                     />
-
-                    <ConfigurationByStorageModal 
-                        modalModel={configurationByStorageModal} 
-                        product={selectedStore}
-                    />
-                    
-                    <ProductModal 
-                        modalModel={storeModal} 
-                        product={selectedStore} 
-                    />
-
-                    <DeleteProductModal 
-                        modalModel={deleteStoreModal} 
-                        product={selectedStore} 
-                    /> */}
                 </div>
                 
                 <div className="">
                     <div className="flex justify-between items-center mb-4">
-                        <GenericTitle removeMargin>Sucursales</GenericTitle>
+                        <GenericTitle 
+                            removeMargin 
+                            subtitle={storeToBranch ? `Mostrando sucursales de "${storeToBranch.name}"` : "Seleccione una tienda para ver sus sucursales"}
+                        >
+                            Sucursales
+                        </GenericTitle>
 
                         <DaisyButton
                             variant="primary"
                             modifier="square"
-                            tooltip="Crear Tienda"
+                            tooltip="Crear Sucursal"
                             tooltipPlacement="left"
 
-                            onClick={onCreateStoreClick}
+                            onClick={onCreateBranchClick}
                         >
                             <IconPlus size={24} />
                         </DaisyButton>
                     </div>
 
-                    <StoresTable               
-                        onManageBranchesClick={onManageBranchesClick}
-                        onEditStoreClick={onEditStoreClick}
-                        onDeleteStoreClick={onDeleteStoreClick}
+                    <BranchesTable
+                        store={storeToBranch}
+                        onEditBranchClick={onEditBranchClick}
+                        onDeleteBranchClick={onDeleteBranchClick}
                     />
 
                     {/* <ConfigurationByStoreModal 
