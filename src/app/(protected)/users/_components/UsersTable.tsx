@@ -4,7 +4,7 @@ import DaisyButton from "@/app/_components/DaisyButton";
 import { IconPencil, IconUserOff, IconUserCheck } from "@tabler/icons-react";
 import { ColumnDef } from "@tanstack/react-table";
 import DaisyTable from "@/app/_components/DaisyTable";
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect, useCallback } from "react";
 import useModal from "@/app/_hooks/useModal";
 import UserModal from "./UserModal";
 import BanUserModal from "./BanUserModal";
@@ -22,15 +22,15 @@ export default function UsersTable() {
     const [selectedUser, setSelectedUser] = useState<User | null>(null);
     const [userNames, setUserNames] = useState<Record<string, string>>({});
 
-    const handleEditClick = (user: User) => {
+    const handleEditClick = useCallback((user: User) => {
         setSelectedUser(user);
         userModal.open();
-    };
+    }, [userModal, setSelectedUser]);
 
-    const handleBanClick = (user: User) => {
+    const handleBanClick = useCallback((user: User) => {
         setSelectedUser(user);
         banUserModal.open();
-    };
+    }, [banUserModal, setSelectedUser]);
 
     // Cargar nombres de usuarios relacionados
     useEffect(() => {
@@ -162,7 +162,7 @@ export default function UsersTable() {
                 </div>
             ),
         },
-    ], [userNames]);
+    ], [userNames, handleEditClick, handleBanClick]);
 
     return (
         <>

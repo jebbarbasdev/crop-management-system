@@ -1,6 +1,5 @@
-import React from "react";
+import React, { useMemo, useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import DaisyModal from "@/app/_components/DaisyModal";
 import { UseModalModel } from "@/app/_hooks/useModal";
@@ -86,7 +85,10 @@ export default function RolePermissionsModal({ modalModel, role }: RolePermissio
     return acc;
   }, {} as Record<string, typeof permissions>);
 
-  const moduleNames = permissions ? Array.from(new Set(permissions.map(p => p.module?.name || "Sin módulo"))) : [];
+  const moduleNames = useMemo(() => 
+    permissions ? Array.from(new Set(permissions.map(p => p.module?.name || "Sin módulo"))) : [],
+    [permissions]
+  );
 
   useEffect(() => {
     if (!selectedModule && moduleNames.length > 0) {

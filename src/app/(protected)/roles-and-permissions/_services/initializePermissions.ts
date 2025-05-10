@@ -3,17 +3,20 @@ import { createSupabaseBrowserClient } from "@/app/_utilities/createSupabaseBrow
 export async function initializePermissions() {
   const supabase = createSupabaseBrowserClient();
 
-  let { data: module, error: moduleError } = await supabase
+  let moduleData;
+  const { data: moduleDataResult, error: moduleError } = await supabase
     .from("modules")
     .select("id")
     .eq("slug", "roles-and-permissions")
     .single();
 
+  moduleData = moduleDataResult;
+
   if (moduleError && moduleError.code !== "PGRST116") {
     throw new Error("No se pudo verificar el módulo de roles y permisos.");
   }
 
-  if (!module) {
+  if (!moduleData) {
     const { data: newModule, error: createModuleError } = await supabase
       .from("modules")
       .insert([
@@ -29,29 +32,29 @@ export async function initializePermissions() {
       throw new Error("No se pudo crear el módulo de roles y permisos.");
     }
 
-    module = newModule;
+    moduleData = newModule;
   }
 
   const permissions = [
     {
       name: "create",
       description: "Crear roles",
-      module_id: module.id,
+      module_id: moduleData.id,
     },
     {
       name: "read",
       description: "Ver roles y permisos",
-      module_id: module.id,
+      module_id: moduleData.id,
     },
     {
       name: "update",
       description: "Actualizar roles",
-      module_id: module.id,
+      module_id: moduleData.id,
     },
     {
       name: "delete",
       description: "Eliminar roles",
-      module_id: module.id,
+      module_id: moduleData.id,
     },
   ];
 

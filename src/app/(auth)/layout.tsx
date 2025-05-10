@@ -1,4 +1,5 @@
 import clsx from 'clsx'
+import Image from 'next/image'
 import Header from '../_components/Header'
 import css from './layout.module.css'
 
@@ -12,11 +13,13 @@ export default function AuthLayout({
             <Header className={css.header} user={null} />
 
             <div className={clsx(css.logo, 'flex flex-col items-center justify-center gap-4 p-4')}>
-                <img 
+                <Image 
                     src="/cropms-logo.png" 
                     alt="Crop Management System Logo" 
-                    loading='lazy'
+                    width={200}
+                    height={200}
                     className="w-1/2 h-auto"
+                    priority
                 />
 
                 <span className='text-rose-900 text-center'>
