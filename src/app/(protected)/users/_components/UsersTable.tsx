@@ -113,9 +113,13 @@ export default function UsersTable() {
         {
             accessorKey: "created_by",
             header: () => "Creado Por",
-            cell: ({ row }) =>
-                row.original.created_by
-                    ? userNames[row.original.created_by] : "Sistema",
+            cell: ({ row }) => {
+                const user = row.original.created_by_user;
+                if (user) {
+                    return `#${user.employee_number} - ${user.full_name}`;
+                }
+                return row.original.created_by ? userNames[row.original.created_by] : "Sistema";
+            },
         },
         {
             accessorKey: "updated_at",
@@ -126,9 +130,13 @@ export default function UsersTable() {
         {
             accessorKey: "updated_by",
             header: () => "Modificado Por",
-            cell: ({ row }) =>
-                row.original.updated_by
-                    ? userNames[row.original.updated_by] : "No modificado",
+            cell: ({ row }) => {
+                const user = row.original.updated_by_user;
+                if (user) {
+                    return `#${user.employee_number} - ${user.full_name}`;
+                }
+                return row.original.updated_by ? userNames[row.original.updated_by] : "No modificado";
+            },
         },
         {
             id: "actions",

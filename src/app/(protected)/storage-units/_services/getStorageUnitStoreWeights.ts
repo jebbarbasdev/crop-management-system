@@ -17,8 +17,8 @@ export default async function getStorageUnitStoreWeights() {
         stores (
           name
         ),
-        created_by_user:users!storage_unit_store_weights_created_by_fkey ( full_name ),
-        updated_by_user:users!storage_unit_store_weights_updated_by_fkey ( full_name )
+        created_by_user:users!storage_unit_store_weights_created_by_fkey ( employee_number, full_name ),
+        updated_by_user:users!storage_unit_store_weights_updated_by_fkey ( employee_number, full_name )
       `);
 
     if (error) throw error;
@@ -26,8 +26,8 @@ export default async function getStorageUnitStoreWeights() {
     return data?.map(item => ({
       ...item,
       store_name: item.stores?.name,
-      created_by_name: item.created_by_user?.full_name || "-",
-      updated_by_name: item.updated_by_user?.full_name || "-"
+      created_by_name: item.created_by_user ? `#${item.created_by_user.employee_number} - ${item.created_by_user.full_name ?? ''}` : "-",
+      updated_by_name: item.updated_by_user ? `#${item.updated_by_user.employee_number} - ${item.updated_by_user.full_name ?? ''}` : "-"
     })) || [];
     
   } catch (error) {

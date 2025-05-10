@@ -1,5 +1,5 @@
 import DaisyModal from "@/app/_components/DaisyModal";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import DaisyInput from "@/app/_components/DaisyInput";
 import { UseModalModel } from "@/app/_hooks/useModal";
@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 import { updateUser } from "../_services/updateUser";
 import { User } from "../_services/getUsers";
 import { createSupabaseBrowserClient } from "@/app/_utilities/createSupabaseBrowserClient";
+import getRoles from "../_services/getRoles";
 
 type FormValues = {
   id?: string;
@@ -15,14 +16,6 @@ type FormValues = {
   email: string;
   role_id: string;
 };
-
-const ROLES = [
-  { id: "1", name: "Gerente de Operaciones" },
-  { id: "2", name: "Empleado de Ventas" },
-  { id: "3", name: "Empleado de Pesaje" },
-  { id: "4", name: "Administrador" },
-  { id: "5", name: "Empleado" },
-];
 
 interface UserModalProps {
   modalModel: UseModalModel;
@@ -33,6 +26,11 @@ export default function UserModal({ modalModel, user }: UserModalProps) {
   const queryClient = useQueryClient();
   const supabase = createSupabaseBrowserClient();
   const [isLoading, setIsLoading] = useState(false);
+
+  const { data: roles } = useQuery({
+    queryKey: ["roles"],
+    queryFn: getRoles,
+  });
 
   const {
     register,
@@ -171,7 +169,7 @@ export default function UserModal({ modalModel, user }: UserModalProps) {
             className="select select-bordered w-full"
             {...register("role_id", { required: "Seleccione un rol" })}
           >
-            {ROLES.map((role) => (
+            {roles?.map((role) => (
               <option key={role.id} value={role.id}>
                 {role.name}
               </option>

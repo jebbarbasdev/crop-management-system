@@ -365,16 +365,28 @@ export type Database = {
       }
       roles: {
         Row: {
+          created_at?: string
+          created_by?: string
+          updated_at?: string
+          updated_by?: string
           description: string
           id: number
           name: string
         }
         Insert: {
+          created_at?: string
+          created_by?: string
+          updated_at?: string
+          updated_by?: string
           description: string
           id?: number
           name: string
         }
         Update: {
+          created_at?: string
+          created_by?: string
+          updated_at?: string
+          updated_by?: string
           description?: string
           id?: number
           name?: string

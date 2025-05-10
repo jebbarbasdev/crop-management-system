@@ -84,7 +84,13 @@ export default function StorageUnitsTable({
         {
             accessorKey: 'created_by',
             header: () => 'Creado Por',
-            cell: ({ row }) => userNames[row.original.created_by],
+            cell: ({ row }) => {
+                const user = row.original.created_by_user;
+                if (user) {
+                    return `#${user.employee_number} - ${user.full_name ?? ''}`;
+                }
+                return row.original.created_by ? userNames[row.original.created_by] : '';
+            },
         },
         {
             accessorKey: 'updated_at',
@@ -94,8 +100,13 @@ export default function StorageUnitsTable({
         {
             accessorKey: 'updated_by',
             header: () => 'Actualizado Por',
-            cell: ({ row }) => row.original.updated_by ? 
-                (userNames[row.original.updated_by] ) : '',
+            cell: ({ row }) => {
+                const user = row.original.updated_by_user;
+                if (user) {
+                    return `#${user.employee_number} - ${user.full_name ?? ''}`;
+                }
+                return row.original.updated_by ? userNames[row.original.updated_by] : '';
+            },
         },
         {
             id: 'actions',

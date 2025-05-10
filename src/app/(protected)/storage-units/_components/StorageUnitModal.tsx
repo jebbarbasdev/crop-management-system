@@ -60,7 +60,17 @@ export default function StorageUnitModal({ modalModel, storageUnit, onSubmit }: 
                     onChange={(e) => setName(e.target.value)}
                     placeholder="Ejemplo: Caja, Pallet, etc."
                 />
-                {error && <p className="text-red-500 text-sm">{error}</p>} 
+                {error && <p className="text-red-500 text-sm">{error}</p>}
+                {storageUnit && (
+                  <div className="flex flex-col gap-1 text-xs text-gray-500">
+                    {storageUnit.created_by_user && (
+                      <span>Creado por: #{storageUnit.created_by_user.employee_number} - {storageUnit.created_by_user.full_name ?? ''}</span>
+                    )}
+                    {storageUnit.updated_by_user && (
+                      <span>Actualizado por: #{storageUnit.updated_by_user.employee_number} - {storageUnit.updated_by_user.full_name ?? ''}</span>
+                    )}
+                  </div>
+                )}
             </div>
         </DaisyModal>
     );

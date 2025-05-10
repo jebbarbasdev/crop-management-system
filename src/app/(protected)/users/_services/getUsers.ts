@@ -40,7 +40,7 @@ export default async function getUsers(): Promise<User[]> {
       employee_number,
       full_name,
       role_id,
-      roles(name, description),
+      roles:role_id(name, description),
       created_at,
       created_by,
       updated_at,
