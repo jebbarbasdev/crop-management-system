@@ -8,11 +8,11 @@ import { Store } from "../_services/getStores";
 import useModal from "@/app/_hooks/useModal";
 import StoreModal from "./StoreModal";
 import { useState } from "react";
-import clsx from "clsx";
 import DeleteStoreModal from "./DeleteStoreModal";
 import BranchesTable from "./BranchesTable";
 import { Branch } from "../_services/getBranches";
-//import DeleteProductModal from "./DeleteProductModal";
+import BranchModal from "./BranchModal";
+import DeleteBranchModal from "./DeleteBranchModal";
 
 export default function StoresAndBranchesClientPage() {
     const [selectedStore, setSelectedStore] = useState<Store|null>(null) 
@@ -123,25 +123,17 @@ export default function StoresAndBranchesClientPage() {
                         onDeleteBranchClick={onDeleteBranchClick}
                     />
 
-                    {/* <ConfigurationByStoreModal 
-                        modalModel={configurationByStoreModal} 
-                        product={selectedStore}
+                    <BranchModal
+                        modalModel={branchModal}
+                        store={storeToBranch}
+                        branch={selectedBranch}
                     />
 
-                    <ConfigurationByStorageModal 
-                        modalModel={configurationByStorageModal} 
-                        product={selectedStore}
+                    <DeleteBranchModal
+                        modalModel={deleteBranchModal}
+                        store={storeToBranch}
+                        branch={selectedBranch}
                     />
-                    
-                    <ProductModal 
-                        modalModel={storeModal} 
-                        product={selectedStore} 
-                    />
-
-                    <DeleteProductModal 
-                        modalModel={deleteStoreModal} 
-                        product={selectedStore} 
-                    /> */}
                 </div>
             </div>
         </div>

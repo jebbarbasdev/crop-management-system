@@ -11,12 +11,12 @@ import { useEffect } from "react";
 import { updateStore } from "../_services/updateStore";
 import { Store } from "../_services/getStores";
 
-export interface ProductModalProps {
+export interface StoreModalProps {
     modalModel: UseModalModel
     store: Store | null
 }
 
-export default function ProductModal({ modalModel, store }: ProductModalProps) {
+export default function StoreModal({ modalModel, store }: StoreModalProps) {
     const queryClient = useQueryClient()
     
     const {
@@ -104,7 +104,7 @@ export default function ProductModal({ modalModel, store }: ProductModalProps) {
                     placeholder="Razón Social de la Tienda"
 
                     label="Razón Social de la Tienda"
-                    error={errors.name?.message}
+                    error={errors.legal_name?.message}
 
                     disabled={loading}
 

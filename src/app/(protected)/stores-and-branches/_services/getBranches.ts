@@ -12,6 +12,7 @@ export default async function getBranches(storeId: number) {
             id,
             sd_name,
             sd_number,
+            store_id,
 
             created_at,
             created_by:users!created_by (
