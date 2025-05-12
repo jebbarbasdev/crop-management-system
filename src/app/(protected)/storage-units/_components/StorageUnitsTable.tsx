@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import getStorageUnits, { StorageUnit } from "../_services/getStorageUnits";
 import formatAt from "@/app/_utilities/formatAt";
 import DaisyButton from "@/app/_components/DaisyButton";
-import { IconPencil, IconTrash } from "@tabler/icons-react";
+import { IconPencil, IconTrash, IconBuildingStore } from "@tabler/icons-react";
 import { ColumnDef } from "@tanstack/react-table";
 import DaisyTable from "@/app/_components/DaisyTable";
 import { useMemo, useState, useEffect } from "react";
@@ -11,11 +11,13 @@ import { createSupabaseBrowserClient } from "@/app/_utilities/createSupabaseBrow
 export interface StorageUnitsTableProps {
     onEditStorageUnitClick: (storageUnit: StorageUnit) => any;
     onDeleteStorageUnitClick: (storageUnit: StorageUnit) => any;
+    onConfigureWeightsClick: (storageUnit: StorageUnit) => any; 
 }
 
 export default function StorageUnitsTable({
     onEditStorageUnitClick,
     onDeleteStorageUnitClick,
+    onConfigureWeightsClick, 
 }: StorageUnitsTableProps) {
     const [userNames, setUserNames] = useState<Record<string, string>>({});
     
@@ -82,7 +84,13 @@ export default function StorageUnitsTable({
         {
             accessorKey: 'created_by',
             header: () => 'Creado Por',
-            cell: ({ row }) => userNames[row.original.created_by],
+            cell: ({ row }) => {
+                const user = row.original.created_by_user;
+                if (user) {
+                    return `#${user.employee_number} - ${user.full_name ?? ''}`;
+                }
+                return row.original.created_by ? userNames[row.original.created_by] : '';
+            },
         },
         {
             accessorKey: 'updated_at',
@@ -92,14 +100,28 @@ export default function StorageUnitsTable({
         {
             accessorKey: 'updated_by',
             header: () => 'Actualizado Por',
-            cell: ({ row }) => row.original.updated_by ? 
-                (userNames[row.original.updated_by] ) : '',
+            cell: ({ row }) => {
+                const user = row.original.updated_by_user;
+                if (user) {
+                    return `#${user.employee_number} - ${user.full_name ?? ''}`;
+                }
+                return row.original.updated_by ? userNames[row.original.updated_by] : '';
+            },
         },
         {
             id: 'actions',
             header: () => 'Acciones',
             cell: ({ row }) => (
                 <div className="flex gap-2 justify-center items-center">
+                    <DaisyButton
+                        variant="secondary"
+                        modifier="square"
+                        tooltip="Configurar Pesos"
+                        tooltipPlacement="left"
+                        onClick={() => onConfigureWeightsClick(row.original)} 
+                    >
+                        <IconBuildingStore size={24} />
+                    </DaisyButton>
                     <DaisyButton
                         variant="warning"
                         modifier="square"
@@ -122,7 +144,7 @@ export default function StorageUnitsTable({
                 </div>
             ),
         },
-    ], [userNames, onEditStorageUnitClick, onDeleteStorageUnitClick]);
+    ], [userNames, onEditStorageUnitClick, onDeleteStorageUnitClick, onConfigureWeightsClick]);
     
     return (
         <DaisyTable columns={columns} data={data ?? []} isLoading={isLoading} error={error} />

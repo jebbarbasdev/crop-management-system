@@ -4,7 +4,7 @@ import DaisyButton from "@/app/_components/DaisyButton";
 import { IconPencil, IconUserOff, IconUserCheck } from "@tabler/icons-react";
 import { ColumnDef } from "@tanstack/react-table";
 import DaisyTable from "@/app/_components/DaisyTable";
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect, useCallback } from "react";
 import useModal from "@/app/_hooks/useModal";
 import UserModal from "./UserModal";
 import BanUserModal from "./BanUserModal";
@@ -22,15 +22,15 @@ export default function UsersTable() {
     const [selectedUser, setSelectedUser] = useState<User | null>(null);
     const [userNames, setUserNames] = useState<Record<string, string>>({});
 
-    const handleEditClick = (user: User) => {
+    const handleEditClick = useCallback((user: User) => {
         setSelectedUser(user);
         userModal.open();
-    };
+    }, [userModal, setSelectedUser]);
 
-    const handleBanClick = (user: User) => {
+    const handleBanClick = useCallback((user: User) => {
         setSelectedUser(user);
         banUserModal.open();
-    };
+    }, [banUserModal, setSelectedUser]);
 
     // Cargar nombres de usuarios relacionados
     useEffect(() => {
@@ -113,9 +113,13 @@ export default function UsersTable() {
         {
             accessorKey: "created_by",
             header: () => "Creado Por",
-            cell: ({ row }) =>
-                row.original.created_by
-                    ? userNames[row.original.created_by] : "Sistema",
+            cell: ({ row }) => {
+                const user = row.original.created_by_user;
+                if (user) {
+                    return `#${user.employee_number} - ${user.full_name}`;
+                }
+                return row.original.created_by ? userNames[row.original.created_by] : "Sistema";
+            },
         },
         {
             accessorKey: "updated_at",
@@ -126,9 +130,13 @@ export default function UsersTable() {
         {
             accessorKey: "updated_by",
             header: () => "Modificado Por",
-            cell: ({ row }) =>
-                row.original.updated_by
-                    ? userNames[row.original.updated_by] : "No modificado",
+            cell: ({ row }) => {
+                const user = row.original.updated_by_user;
+                if (user) {
+                    return `#${user.employee_number} - ${user.full_name}`;
+                }
+                return row.original.updated_by ? userNames[row.original.updated_by] : "No modificado";
+            },
         },
         {
             id: "actions",
@@ -154,7 +162,7 @@ export default function UsersTable() {
                 </div>
             ),
         },
-    ], [userNames]);
+    ], [userNames, handleEditClick, handleBanClick]);
 
     return (
         <>

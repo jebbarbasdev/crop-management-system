@@ -149,6 +149,66 @@ export type Database = {
           },
         ]
       }
+      storage_unit_store_weights: {
+        Row: {
+          id: number
+          storage_unit_id: number
+          store_id: number
+          weight_by_unit: number
+          created_at: string
+          created_by: string
+          updated_at: string
+          updated_by: string
+        }
+        Insert: {
+          storage_unit_id: number
+          store_id: number
+          weight_by_unit: number
+          created_at?: string
+          created_by: string
+          updated_at?: string
+          updated_by: string
+        }
+        Update: {
+          storage_unit_id?: number
+          store_id?: number
+          weight_by_unit?: number
+          created_at?: string
+          created_by?: string
+          updated_at?: string
+          updated_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "storage_unit_store_weights_storage_unit_id_fkey"
+            columns: ["storage_unit_id"]
+            isOneToOne: false
+            referencedRelation: "storage_units"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "storage_unit_store_weights_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "storage_unit_store_weights_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "storage_unit_store_weights_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }      
       products: {
         Row: {
           created_at: string
@@ -330,16 +390,28 @@ export type Database = {
       }
       roles: {
         Row: {
+          created_at?: string
+          created_by?: string
+          updated_at?: string
+          updated_by?: string
           description: string
           id: number
           name: string
         }
         Insert: {
+          created_at?: string
+          created_by?: string
+          updated_at?: string
+          updated_by?: string
           description: string
           id?: number
           name: string
         }
         Update: {
+          created_at?: string
+          created_by?: string
+          updated_at?: string
+          updated_by?: string
           description?: string
           id?: number
           name?: string
@@ -584,7 +656,7 @@ export type Database = {
           is_banned?: boolean | null
           role_id: number
           updated_at?: string
-          updated_by?: string | null
+          is_banned?: boolean | null; // Asegúrate de incluirlo aquí
         }
         Update: {
           created_at?: string
@@ -598,7 +670,7 @@ export type Database = {
           is_banned?: boolean | null
           role_id?: number
           updated_at?: string
-          updated_by?: string | null
+          is_banned?: boolean | null; // Asegúrate de incluirlo aquí
         }
         Relationships: [
           {
