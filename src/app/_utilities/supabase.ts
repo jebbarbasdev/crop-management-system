@@ -79,40 +79,79 @@ export type Database = {
       }
       modules: {
         Row: {
+          created_at: string | null
+          created_by: string | null
           id: number
           name: string
           slug: string
+          updated_at: string | null
+          updated_by: string | null
         }
         Insert: {
+          created_at?: string | null
+          created_by?: string | null
           id?: number
           name: string
           slug: string
+          updated_at?: string | null
+          updated_by?: string | null
         }
         Update: {
+          created_at?: string | null
+          created_by?: string | null
           id?: number
           name?: string
           slug?: string
+          updated_at?: string | null
+          updated_by?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "modules_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "modules_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       permissions: {
         Row: {
+          created_at: string | null
+          created_by: string | null
           description: string
           id: number
           module_id: number
           name: string
+          updated_at: string | null
+          updated_by: string | null
         }
         Insert: {
+          created_at?: string | null
+          created_by?: string | null
           description: string
           id?: number
           module_id: number
           name: string
+          updated_at?: string | null
+          updated_by?: string | null
         }
         Update: {
+          created_at?: string | null
+          created_by?: string | null
           description?: string
           id?: number
           module_id?: number
           name?: string
+          updated_at?: string | null
+          updated_by?: string | null
         }
         Relationships: [
           {
@@ -122,68 +161,22 @@ export type Database = {
             referencedRelation: "modules"
             referencedColumns: ["id"]
           },
-        ]
-      }
-      storage_unit_store_weights: {
-        Row: {
-          id: number
-          storage_unit_id: number
-          store_id: number
-          weight_by_unit: number
-          created_at: string
-          created_by: string
-          updated_at: string
-          updated_by: string
-        }
-        Insert: {
-          storage_unit_id: number
-          store_id: number
-          weight_by_unit: number
-          created_at?: string
-          created_by: string
-          updated_at?: string
-          updated_by: string
-        }
-        Update: {
-          storage_unit_id?: number
-          store_id?: number
-          weight_by_unit?: number
-          created_at?: string
-          created_by?: string
-          updated_at?: string
-          updated_by?: string
-        }
-        Relationships: [
           {
-            foreignKeyName: "storage_unit_store_weights_storage_unit_id_fkey"
-            columns: ["storage_unit_id"]
-            isOneToOne: false
-            referencedRelation: "storage_units"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "storage_unit_store_weights_store_id_fkey"
-            columns: ["store_id"]
-            isOneToOne: false
-            referencedRelation: "stores"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "storage_unit_store_weights_created_by_fkey"
+            foreignKeyName: "permissions_created_by_fkey"
             columns: ["created_by"]
             isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "storage_unit_store_weights_updated_by_fkey"
+            foreignKeyName: "permissions_updated_by_fkey"
             columns: ["updated_by"]
             isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
           },
         ]
-      }      
+      }
       products: {
         Row: {
           created_at: string
@@ -365,46 +358,73 @@ export type Database = {
       }
       roles: {
         Row: {
-          created_at?: string
-          created_by?: string
-          updated_at?: string
-          updated_by?: string
+          created_at: string | null
+          created_by: string | null
           description: string
           id: number
           name: string
+          updated_at: string | null
+          updated_by: string | null
         }
         Insert: {
-          created_at?: string
-          created_by?: string
-          updated_at?: string
-          updated_by?: string
+          created_at?: string | null
+          created_by?: string | null
           description: string
           id?: number
           name: string
+          updated_at?: string | null
+          updated_by?: string | null
         }
         Update: {
-          created_at?: string
-          created_by?: string
-          updated_at?: string
-          updated_by?: string
+          created_at?: string | null
+          created_by?: string | null
           description?: string
           id?: number
           name?: string
+          updated_at?: string | null
+          updated_by?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "roles_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "roles_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       roles_permissions: {
         Row: {
+          created_at: string | null
+          created_by: string | null
           permission_id: number
           role_id: number
+          updated_at: string | null
+          updated_by: string | null
         }
         Insert: {
+          created_at?: string | null
+          created_by?: string | null
           permission_id: number
           role_id: number
+          updated_at?: string | null
+          updated_by?: string | null
         }
         Update: {
+          created_at?: string | null
+          created_by?: string | null
           permission_id?: number
           role_id?: number
+          updated_at?: string | null
+          updated_by?: string | null
         }
         Relationships: [
           {
@@ -419,6 +439,82 @@ export type Database = {
             columns: ["role_id"]
             isOneToOne: false
             referencedRelation: "roles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "roles_permissions_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "roles_permissions_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      storage_unit_store_weights: {
+        Row: {
+          created_at: string | null
+          created_by: string
+          id: number
+          storage_unit_id: number
+          store_id: number
+          updated_at: string | null
+          updated_by: string
+          weight_by_unit: number
+        }
+        Insert: {
+          created_at?: string | null
+          created_by: string
+          id?: number
+          storage_unit_id: number
+          store_id: number
+          updated_at?: string | null
+          updated_by: string
+          weight_by_unit: number
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string
+          id?: number
+          storage_unit_id?: number
+          store_id?: number
+          updated_at?: string | null
+          updated_by?: string
+          weight_by_unit?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "storage_unit_store_weights_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "storage_unit_store_weights_storage_unit_id_fkey"
+            columns: ["storage_unit_id"]
+            isOneToOne: false
+            referencedRelation: "storage_units"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "storage_unit_store_weights_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "storage_unit_store_weights_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "users"
             referencedColumns: ["id"]
           },
         ]
@@ -486,6 +582,7 @@ export type Database = {
           deleted_at: string | null
           deleted_by: string | null
           id: number
+          legal_name: string
           name: string
           rfc: string
           updated_at: string
@@ -498,6 +595,7 @@ export type Database = {
           deleted_at?: string | null
           deleted_by?: string | null
           id?: number
+          legal_name: string
           name: string
           rfc: string
           updated_at?: string
@@ -510,6 +608,7 @@ export type Database = {
           deleted_at?: string | null
           deleted_by?: string | null
           id?: number
+          legal_name?: string
           name?: string
           rfc?: string
           updated_at?: string
@@ -541,46 +640,46 @@ export type Database = {
       }
       users: {
         Row: {
-          created_at: string;
-          created_by: string | null;
-          deleted_at: string | null;
-          deleted_by: string | null;
-          email: string;
-          employee_number: number;
-          full_name: string | null;
-          id: string;
-          role_id: number;
-          updated_at: string;
-          updated_by: string | null;
-          is_banned: boolean | null; // Ya está aquí
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          deleted_by: string | null
+          email: string
+          employee_number: number
+          full_name: string | null
+          id: string
+          is_banned: boolean | null
+          role_id: number
+          updated_at: string
+          updated_by: string | null
         }
         Insert: {
-          created_at?: string;
-          created_by?: string | null;
-          deleted_at?: string | null;
-          deleted_by?: string | null;
-          email: string;
-          employee_number?: number;
-          full_name?: string | null;
-          id: string;
-          role_id: number;
-          updated_at?: string;
-          updated_by?: string | null;
-          is_banned?: boolean | null; 
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
+          email: string
+          employee_number?: number
+          full_name?: string | null
+          id: string
+          is_banned?: boolean | null
+          role_id: number
+          updated_at?: string
+          updated_by?: string | null
         }
         Update: {
-          created_at?: string;
-          created_by?: string | null;
-          deleted_at?: string | null;
-          deleted_by?: string | null;
-          email?: string;
-          employee_number?: number;
-          full_name?: string | null;
-          id?: string;
-          role_id?: number;
-          updated_at?: string;
-          updated_by?: string | null;
-          is_banned?: boolean | null; 
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
+          email?: string
+          employee_number?: number
+          full_name?: string | null
+          id?: string
+          is_banned?: boolean | null
+          role_id?: number
+          updated_at?: string
+          updated_by?: string | null
         }
         Relationships: [
           {
