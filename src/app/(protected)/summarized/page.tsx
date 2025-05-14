@@ -1,10 +1,16 @@
-export default function SummarizedPage() {
+import { Metadata } from "next";
+import QueryProvider from "@/app/_providers/QueryProvider";
+import SummarizedClientPage from "./_components/SummarizedClientPage";
+
+export const metadata: Metadata = {
+    title: "Sumarizado | Crop Management System",
+    description: "Página de Sumarizado de Crop Management System",
+};
+
+export default function ClientPage() {
     return (
-        <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-4">
-            <div className="bg-white shadow-lg rounded-2xl p-6 max-w-lg w-full">
-                <h1 className="text-3xl font-bold text-gray-800 mb-4">Sumarizado</h1>
-                <p className="text-gray-600 text-base">Aquí encontrarás un resumen general de los datos más relevantes y una visión rápida de la información importante. Mantente actualizado y accede a los detalles esenciales de forma rápida y sencilla.</p>
-            </div>
-        </div>
-    );
+        <QueryProvider>
+            <SummarizedClientPage />
+        </QueryProvider>
+    )
 }

@@ -1,0 +1,29 @@
+import { createSupabaseBrowserClient } from "@/app/_utilities/createSupabaseBrowserClient";
+
+export default async function getOrderDetails(orderId: number, storeId: number) {
+    const supabase = await createSupabaseBrowserClient();
+    const { data, error } = await supabase
+        .from("order_details")
+        .select(`
+            id,
+            product_id,
+            quantity,
+            storage_unit_id,
+            products:product_id (
+                name
+            ),
+            storage_units:storage_unit_id (
+                name
+            )
+        `)
+        .eq("order_id", orderId);
+
+    if (error) throw error;
+    console.log("Detalles:", data);
+    console.log("Error:", error);
+    return data?.map((detail: any) => ({
+        ...detail,
+        // Busca el precio por kg correspondiente al store_id de la orden
+        sd_price_by_kg: detail.products_stores?.find((ps: any) => ps.store_id === storeId)?.sd_price_by_kg ?? "-"
+    }));
+} 

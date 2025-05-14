@@ -177,6 +177,211 @@ export type Database = {
           },
         ]
       }
+
+      estates: {
+        Row: {
+          id: number
+          Estates: string
+          descripcion: string
+        }
+        Insert: {
+          id?: number
+          Estates: string
+          descripcion: string
+        }
+        Update: {
+          id?: number
+          Estates?: string
+          descripcion?: string
+        }
+        Relationships: []
+      }
+      
+      order_detail_summaries: {
+        Row: {
+          id: number
+          order_detail_id: number
+          billed_product_price_per_kg: number
+          billed_gross_weight: number
+          billed_net_weight: number
+          billed_profit: number
+          measured_gross_weight: number
+          measured_net_weight: number
+          measured_profit: number
+          store_gross_weight: number
+          store_net_weight: number
+          store_profit: number
+        }
+        Insert: {
+          id?: number
+          order_detail_id: number
+          billed_product_price_per_kg: number
+          billed_gross_weight: number
+          billed_net_weight: number
+          billed_profit: number
+          measured_gross_weight?: number
+          measured_net_weight?: number
+          measured_profit?: number
+          store_gross_weight?: number
+          store_net_weight?: number
+          store_profit?: number
+        }
+        Update: {
+          id?: number
+          order_detail_id?: number
+          billed_product_price_per_kg?: number
+          billed_gross_weight?: number
+          billed_net_weight?: number
+          billed_profit?: number
+          measured_gross_weight?: number
+          measured_net_weight?: number
+          measured_profit?: number
+          store_gross_weight?: number
+          store_net_weight?: number
+          store_profit?: number
+          states?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_detail_summaries_order_detail_id_fkey"
+            columns: ["order_detail_id"]
+            isOneToOne: false
+            referencedRelation: "order_details"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_detail_summaries_states_fkey"
+            columns: ["states"]
+            isOneToOne: false
+            referencedRelation: "Estatus"
+            referencedColumns: ["id"]
+          }
+        ]
+      }      
+      order_details: {
+        Row: {
+          id: number
+          order_id: number
+          product_id: number
+          storage_unit_id: number
+          quantity: number
+        }
+        Insert: {
+          id?: number
+          order_id: number
+          product_id: number
+          storage_unit_id: number
+          quantity: number
+        }
+        Update: {
+          id?: number
+          order_id?: number
+          product_id?: number
+          storage_unit_id?: number
+          quantity?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_details_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_details_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_details_storage_unit_id_fkey"
+            columns: ["storage_unit_id"]
+            isOneToOne: false
+            referencedRelation: "storage_units"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      
+      orders: {
+        Row: {
+          id: number
+          branch_id: number
+          delivery_date: string
+          created_at: string
+          created_by: string
+          updated_at: string
+          updated_by: string
+          deleted_at: string | null
+          deleted_by: string | null
+          status: number
+        }
+        Insert: {
+          id?: number
+          branch_id: number
+          delivery_date: string
+          created_at?: string
+          created_by: string
+          updated_at?: string
+          updated_by?: string
+          deleted_at?: string | null
+          deleted_by?: string | null
+          status: number
+        }
+        Update: {
+          id?: number
+          branch_id?: number
+          delivery_date?: string
+          created_at?: string
+          created_by?: string
+          updated_at?: string
+          updated_by?: string
+          deleted_at?: string | null
+          deleted_by?: string | null
+          status?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orders_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_deleted_by_fkey"
+            columns: ["deleted_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_status_fkey"
+            columns: ["status"]
+            isOneToOne: false
+            referencedRelation: "estates"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      
+
       products: {
         Row: {
           created_at: string
