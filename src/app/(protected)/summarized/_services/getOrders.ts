@@ -15,7 +15,7 @@ export default async function getOrders() {
             status,
             
             branches:branch_id (
-                sd_name
+                sd_name 
             ),
             estates:status (
                 Estates

@@ -136,46 +136,32 @@ export default function OrderDetailsModal({ modalModel, order }: OrderDetailsMod
                                 </tr>
                             </thead>
                             <tbody>
-                                {details.map((detail: any) => {
-                                    // Buscar el precio por nombre de producto y nombre de tienda
-                                    const price = prices.find(
+                                {details.map((detail: any)  => {
+                                    // Busca el precio correspondiente al producto y tienda
+                                    let price = prices.find(
                                         (p: ProductPrice) =>
-                                            p.product_name === detail.products?.name &&
-                                            p.store_name === storeName
+                                            p.product_name.trim().toLowerCase() === detail.products?.name.trim().toLowerCase() &&
+                                            p.store_name.trim().toLowerCase() === storeName.trim().toLowerCase()
                                     );
+                                    // Si no encuentra por tienda, busca solo por producto
+                                    if (!price) {
+                                        price = prices.find(
+                                            (p: ProductPrice) =>
+                                                p.product_name.trim().toLowerCase() === detail.products?.name.trim().toLowerCase()
+                                        );
+                                    }
                                     return (
                                         <tr key={detail.id}>
                                             <td>{detail.id}</td>
-                                            <td>{detail.products?.name || detail.product_id}</td>
-                                            <td>{price?.price_per_kg ?? "-"}</td>
+                                            <td>{detail.products?.name}</td>
+                                            <td>{price ? price.price_per_kg : '-'}</td>
                                             <td>{detail.quantity}</td>
-                                            <td>{detail.storage_units?.name || detail.storage_unit_id}</td>
+                                            <td>{detail.storage_units?.name}</td>
                                         </tr>
                                     );
                                 })}
                             </tbody>
                         </table>
-
-                        {!isLoadingPrices && prices && prices.length > 0 && (
-                            <table className="table w-full">
-                                <thead>
-                                    <tr>
-                                        <th>Producto</th>
-                                        <th>Precio por kg</th>
-                                        <th>Tienda</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {prices.map((price: any) => (
-                                        <tr key={`${price.product_name}-${price.store_name}`}>
-                                            <td>{price.product_name}</td>
-                                            <td>{price.price_per_kg}</td>
-                                            <td>{price.store_name}</td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        )}
                     </div>
                 </>
             )}
