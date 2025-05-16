@@ -1,10 +1,14 @@
 import DaisyModal from "@/app/_components/DaisyModal";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import getOrderDetails from "../_services/getOrderDetails";
 import { Order } from "../_services/getOrders";
-import { useState } from "react";
-import insertOrderDetailSummary from "../_services/insertOrderDetailSummary";
+import { useState, useEffect, useCallback } from "react";
 import getOrderProductPrices from "../_services/getOrderProductPrices";
+import getOrderDetailSummaries from "../_services/getOrderDetailSummaries";
+import updateOrderStatus from "../_services/updateOrderStatus";
+import { toast } from "sonner";
+import upsertOrderDetailSummariesManual from "../_services/upsertOrderDetailSummaries";
+import { getEstadoColor } from "@/app/(protected)/summarized/_services/statusColors";
 
 interface OrderDetailsModalProps {
     modalModel: ReturnType<typeof import("@/app/_hooks/useModal").default>;
@@ -18,17 +22,101 @@ interface ProductPrice {
 }
 
 export default function OrderDetailsModal({ modalModel, order }: OrderDetailsModalProps) {
-    const { data: details, isLoading, error } = useQuery({
-        queryKey: ["order_details", order?.id, order?.branch_id],
-        queryFn: () => order ? getOrderDetails(order.id, order.branch_id) : [],
-        enabled: !!order
-    });
+    const queryClient = useQueryClient();
+    const [localDetails, setLocalDetails] = useState<any[]>([]);
+    const [localPrices, setLocalPrices] = useState<ProductPrice[]>([]);
+    const [localSummaries, setLocalSummaries] = useState<any[]>([]);
+    const [editableSummaries, setEditableSummaries] = useState<any[]>([]);
+    const [inputsDisabled, setInputsDisabled] = useState(false);
+    const [storeInputsEditable, setStoreInputsEditable] = useState(false);
+
+    const ESTATE_ID_TO_TEXT: Record<number, string> = {
+        1: 'CREADO',
+        2: 'EN_PESAJE',
+        3: 'PESADO',
+        4: 'EN_REVISION',
+        5: 'ENVIADO',
+        6: 'RECIBIDO',
+        7: 'CERRADO',
+        8: 'PAGADO',
+    };
+    const NEXT_STATUS_ID: Record<number, { id: number, text: string }> = {
+        4: { id: 5, text: 'Completar Revisión' },    
+        5: { id: 6, text: 'Registrar Recibido' },    
+        6: { id: 7, text: 'Cerrar Pedido' },         
+        7: { id: 8, text: 'Registrar Pago' },        
+    };
+
+    const currentStatusId = order?.status ?? 0;
+    const next = NEXT_STATUS_ID[currentStatusId];
+
+    const loadSummaries = useCallback(async () => {
+        if (!order?.id) return;
+        try {
+            const summariesData = await getOrderDetailSummaries(order.id);
+            setLocalSummaries(summariesData);
+            setEditableSummaries(summariesData.map(s => ({ ...s })));
+            return summariesData;
+        } catch (error) {
+            console.error("Error loading summaries:", error);
+            return [];
+        }
+    }, [order?.id]);
+
+    const loadAllData = useCallback(async () => {
+        if (!order?.id || !order?.branch_id) return;
+        try {
+            await loadSummaries();
+            const [detailsData, pricesData] = await Promise.all([
+                getOrderDetails(order.id, order.branch_id),
+                getOrderProductPrices(order.id, order.branches?.sd_name || "")
+            ]);
+            setLocalDetails(detailsData);
+            setLocalPrices(pricesData);
+            queryClient.setQueryData(["order_details", order.id, order.branch_id], detailsData);
+            queryClient.setQueryData(["order_product_prices", order.id, order.branches?.sd_name], pricesData);
+        } catch (error) {
+            console.error("Error loading data:", error);
+        }
+    }, [order?.id, order?.branch_id, order?.branches?.sd_name, queryClient, loadSummaries]);
+
+    useEffect(() => {
+        if (order?.id) {
+            loadAllData();
+        }
+    }, [order?.id, loadAllData]);
+
+    useEffect(() => {
+        if (localSummaries.length > 0) {
+            setEditableSummaries(localSummaries.map(s => ({ ...s })));
+        }
+    }, [localSummaries]);
+
+    useEffect(() => {
+        setInputsDisabled(false);
+    }, [order?.id]);
+
+    useEffect(() => {
+        if (currentStatusId === 7) {
+            setStoreInputsEditable(false);
+        }
+    }, [currentStatusId]);
 
     const storeName = order?.branches?.sd_name || "";
-    const { data: prices = [], isLoading: isLoadingPrices, error: errorPrices } = useQuery<ProductPrice[]>({
+    const { data: prices = [], isLoading: isLoadingPrices, error: errorPrices, refetch: refetchPrices } = useQuery<ProductPrice[]>({
         queryKey: ["order_product_prices", order?.id, storeName],
         queryFn: () => order ? getOrderProductPrices(order.id, storeName) : [],
-        enabled: !!order && !!storeName
+        enabled: !!order && !!storeName,
+        staleTime: 0,
+        gcTime: 0,
+    });
+
+    const { data: summaries = [], isLoading: isLoadingSummaries, error: errorSummaries, refetch: refetchSummaries } = useQuery({
+        queryKey: ["order_detail_summaries", order?.id],
+        queryFn: () => order ? getOrderDetailSummaries(order.id) : [],
+        enabled: !!order,
+        staleTime: 0,
+        gcTime: 0,
     });
 
     const [form, setForm] = useState({
@@ -48,10 +136,118 @@ export default function OrderDetailsModal({ modalModel, order }: OrderDetailsMod
     const [errorMsg, setErrorMsg] = useState<string | null>(null);
     const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
+
+    const [page, setPage] = useState(0);
+    const [pageSize, setPageSize] = useState(5);
+    const totalPages = Math.ceil((localDetails?.length ?? 0) / pageSize);
+    const paginatedDetails = (localDetails ?? []).slice(page * pageSize, (page + 1) * pageSize);
+
+    
+    const shouldDisableInputs = (field: string) => {
+        if (currentStatusId === 4) {
+            return !field.startsWith('billed_');
+        }
+        
+        if (currentStatusId === 6 && storeInputsEditable) {
+            return !field.startsWith('store_');
+        }
+        
+        return true;
+    };
+
+    const handleStatusChange = async () => {
+        if (!order?.id || !next) return;
+        setLoading(true);
+
+        try {
+            if (next.id === 6 && !storeInputsEditable) {
+                setStoreInputsEditable(true);
+                setLoading(false);
+                return;
+            }
+
+            if (currentStatusId === 4 && next.id === 5) {
+                const summariesToSave = localDetails.map(detail => {
+                    const summary = editableSummaries.find(s => s.order_detail_id === detail.id) || {};
+                    const price = localPrices.find(
+                        p => p.product_name.trim().toLowerCase() === detail.products?.name.trim().toLowerCase() &&
+                            p.store_name.trim().toLowerCase() === storeName.trim().toLowerCase()
+                    ) || localPrices.find(
+                        p => p.product_name.trim().toLowerCase() === detail.products?.name.trim().toLowerCase()
+                    );
+                    
+                    return {
+                        order_detail_id: detail.id,
+                        billed_product_price_per_kg: Number(summary.billed_product_price_per_kg) || Number(price?.price_per_kg) || 0,
+                        billed_gross_weight: Number(summary.billed_gross_weight) || 0,
+                        billed_net_weight: Number(summary.billed_net_weight) || 0,
+                        billed_profit: Number(summary.billed_profit) || 0,
+                        measured_gross_weight: Number(summary.measured_gross_weight) || 0,
+                        measured_net_weight: Number(summary.measured_net_weight) || 0,
+                        measured_profit: Number(summary.measured_profit) || 0,
+                        store_gross_weight: Number(summary.store_gross_weight) || 0,
+                        store_net_weight: Number(summary.store_net_weight) || 0,
+                        store_profit: Number(summary.store_profit) || 0
+                    };
+                });
+                await upsertOrderDetailSummariesManual(summariesToSave);
+                toast.success('Datos de revisión guardados correctamente');
+            }
+
+            if (currentStatusId === 6 && next.id === 7) {
+                const summariesToSave = localDetails.map(detail => {
+                    const summary = editableSummaries.find(s => s.order_detail_id === detail.id) || {};
+                    const price = localPrices.find(
+                        p => p.product_name.trim().toLowerCase() === detail.products?.name.trim().toLowerCase() &&
+                            p.store_name.trim().toLowerCase() === storeName.trim().toLowerCase()
+                    ) || localPrices.find(
+                        p => p.product_name.trim().toLowerCase() === detail.products?.name.trim().toLowerCase()
+                    );
+                    
+                    return {
+                        order_detail_id: detail.id,
+                        billed_product_price_per_kg: Number(summary.billed_product_price_per_kg) || Number(price?.price_per_kg) || 0,
+                        billed_gross_weight: Number(summary.billed_gross_weight) || 0,
+                        billed_net_weight: Number(summary.billed_net_weight) || 0,
+                        billed_profit: Number(summary.billed_profit) || 0,
+                        measured_gross_weight: Number(summary.measured_gross_weight) || 0,
+                        measured_net_weight: Number(summary.measured_net_weight) || 0,
+                        measured_profit: Number(summary.measured_profit) || 0,
+                        store_gross_weight: Number(summary.store_gross_weight) || 0,
+                        store_net_weight: Number(summary.store_net_weight) || 0,
+                        store_profit: Number(summary.store_profit) || 0
+                    };
+                });
+                await upsertOrderDetailSummariesManual(summariesToSave);
+                toast.success('Datos de store guardados correctamente');
+            }
+
+            await updateOrderStatus(order.id, next.id);
+            await queryClient.invalidateQueries({ queryKey: ['orders'] });
+            await loadSummaries();
+            await loadAllData();
+            toast.success(`Estado actualizado a ${next.text} correctamente`);
+            modalModel.close();
+        } catch (err: any) {
+            toast.error(`Error al actualizar el estado: ${err.message || 'Error desconocido'}`);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    
+    const handleSummaryChange = (order_detail_id: number, field: string, value: string) => {
+        setEditableSummaries(prev => prev.map(summary =>
+            summary.order_detail_id === order_detail_id
+                ? { ...summary, [field]: value }
+                : summary
+        ));
+    };
+
     const handleDetailSelect = (detailId: string) => {
-        const selectedDetail = details?.find(d => d.id === Number(detailId));
+        const selectedDetail = localDetails?.find(d => d.id === Number(detailId));
         if (selectedDetail) {
-            const price = prices.find(p => p.product_name === selectedDetail.products?.name);
+            const price = localPrices.find(p => p.product_name === selectedDetail.products?.name);
             setForm(prev => ({
                 ...prev,
                 order_detail_id: detailId,
@@ -69,99 +265,213 @@ export default function OrderDetailsModal({ modalModel, order }: OrderDetailsMod
         }
     };
 
-    const handleSubmit = async () => {
-        if (!details || !order) return;
-        setLoading(true);
-        setErrorMsg(null);
-        setSuccessMsg(null);
-        try {
-            await insertOrderDetailSummary({
-                ...form,
-                order_detail_id: Number(form.order_detail_id),
-                billed_product_price_per_kg: Number(form.billed_product_price_per_kg),
-                billed_gross_weight: Number(form.billed_gross_weight),
-                billed_net_weight: Number(form.billed_net_weight),
-                billed_profit: Number(form.billed_profit),
-                measured_gross_weight: Number(form.measured_gross_weight),
-                measured_net_weight: Number(form.measured_net_weight),
-                measured_profit: Number(form.measured_profit),
-                store_gross_weight: Number(form.store_gross_weight),
-                store_net_weight: Number(form.store_net_weight),
-                store_profit: Number(form.store_profit)
-            });
-            setSuccessMsg("¡Resumen insertado correctamente!");
-            setForm({
-                order_detail_id: "",
-                billed_product_price_per_kg: "",
-                billed_gross_weight: "",
-                billed_net_weight: "",
-                billed_profit: "",
-                measured_gross_weight: "",
-                measured_net_weight: "",
-                measured_profit: "",
-                store_gross_weight: "",
-                store_net_weight: "",
-                store_profit: ""
-            });
-        } catch (err: any) {
-            setErrorMsg(err.message);
-        }
-        setLoading(false);
-    };
+    const uniqueSummaries = Array.from(
+        new Map(editableSummaries.map(s => [s.order_detail_id, s])).values()
+    );
 
-    // DEBUG: Mostrar en consola los datos de precios y detalles
-    if (typeof window !== 'undefined') {
-        console.log('Detalles:', details);
-        console.log('Precios:', prices);
-    }
+    
+    const tableData = localDetails?.map((detail: any) => {
+        const summary = uniqueSummaries.find((s: any) => s.order_detail_id === detail.id) || {};
+        let price = localPrices.find(
+            (p: ProductPrice) =>
+                p.product_name.trim().toLowerCase() === detail.products?.name.trim().toLowerCase() &&
+                p.store_name.trim().toLowerCase() === storeName.trim().toLowerCase()
+        );
+        if (!price) {
+            price = localPrices.find(
+                (p: ProductPrice) =>
+                    p.product_name.trim().toLowerCase() === detail.products?.name.trim().toLowerCase()
+            );
+        }
+        return {
+            id: detail.id,
+            product: detail.products?.name,
+            price_per_kg: price ? price.price_per_kg : '-',
+            quantity: detail.quantity,
+            packaging: detail.storage_units?.name,
+            ...summary
+        };
+    }) || [];
+
+    const isLoadingDetails = localDetails.length === 0 || isLoadingSummaries || isLoadingPrices;
+
+    const nextStatusText = next ? ESTATE_ID_TO_TEXT[next.id] : '';
 
     return (
         <DaisyModal
             modalModel={modalModel}
             title={`Detalles del pedido #${order?.id ?? ""}`}
         >
-            {isLoading && <div>Cargando detalles...</div>}
-            {error && <div className="text-error">Error: {error.message}</div>}
-            {!isLoading && details && (
+            {isLoadingDetails ? (
+                <div className="flex flex-col items-center justify-center py-10">
+                    <span className="loading loading-spinner loading-lg mb-2"></span>
+                    <span className="text-lg font-semibold">Cargando detalles de pedido...</span>
+                </div>
+            ) : (
                 <>
-                    <div className="space-y-4">
-                        <table className="table w-full">
-                            <thead>
-                                <tr>
-                                    <th>ID Detalle</th>
-                                    <th>Producto</th>
-                                    <th>Precio por kg</th>
-                                    <th>Cantidad</th>
-                                    <th>Unidad de Empaque</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {details.map((detail: any)  => {
-                                    // Busca el precio correspondiente al producto y tienda
-                                    let price = prices.find(
-                                        (p: ProductPrice) =>
-                                            p.product_name.trim().toLowerCase() === detail.products?.name.trim().toLowerCase() &&
-                                            p.store_name.trim().toLowerCase() === storeName.trim().toLowerCase()
-                                    );
-                                    // Si no encuentra por tienda, busca solo por producto
-                                    if (!price) {
-                                        price = prices.find(
+                    <div className="space-y-4 max-w-[90vw] max-h-[80vh]">
+                            <div className="flex justify-start mb-2">
+                            <select className="select select-xs w-28" value={pageSize} onChange={e => { setPageSize(Number(e.target.value)); setPage(0); }}>
+                                {[5, 10, 25, 50].map(size => <option key={size} value={size}>{size} por página</option>)}
+                            </select>
+                        </div>
+                        <div className="overflow-x-auto">
+                            <table className="table table-zebra table-pin-rows text-center whitespace-nowrap border border-base-300 w-full">
+                                <thead>
+                                    <tr className="bg-primary text-primary-content">
+                                        <th colSpan={5} className="text-center">Datos Generales</th>
+                                        <th colSpan={3} className="text-center">Billed</th>
+                                        <th colSpan={3} className="text-center">Measured</th>
+                                        <th colSpan={3} className="text-center">Store</th>
+                                    </tr>
+                                    <tr className="bg-base-200">
+                                        <th>ID Detalle</th>
+                                        <th>Producto</th>
+                                        
+                                        <th>Cantidad</th>
+                                        <th>Unidad de Empaque</th>
+                                        <th>Precio por kg</th>
+                                        <th>Peso Bruto</th>
+                                        <th>Peso Neto</th>
+                                        <th>Ganancia</th>
+                                        <th>Peso Bruto</th>
+                                        <th>Peso Neto</th>
+                                        <th>Ganancia</th>
+                                        <th>Peso Bruto</th>
+                                        <th>Peso Neto</th>
+                                        <th>Ganancia</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {paginatedDetails.map((detail: any, idx: number)  => {
+                                        const isEven = idx % 2 === 0;
+                                        const inputBg = isEven ? 'bg-white' : 'bg-base-200';
+                                        let price = prices.find(
                                             (p: ProductPrice) =>
-                                                p.product_name.trim().toLowerCase() === detail.products?.name.trim().toLowerCase()
+                                                p.product_name.trim().toLowerCase() === detail.products?.name.trim().toLowerCase() &&
+                                                p.store_name.trim().toLowerCase() === storeName.trim().toLowerCase()
                                         );
-                                    }
-                                    return (
-                                        <tr key={detail.id}>
-                                            <td>{detail.id}</td>
-                                            <td>{detail.products?.name}</td>
-                                            <td>{price ? price.price_per_kg : '-'}</td>
-                                            <td>{detail.quantity}</td>
-                                            <td>{detail.storage_units?.name}</td>
-                                        </tr>
-                                    );
-                                })}
-                            </tbody>
-                        </table>
+                                        if (!price) {
+                                            price = prices.find(
+                                                (p: ProductPrice) =>
+                                                    p.product_name.trim().toLowerCase() === detail.products?.name.trim().toLowerCase()
+                                            );
+                                        }
+                                        const summary = editableSummaries.find((s: any) => s.order_detail_id === detail.id) || {};
+                                        return (
+                                            <tr key={detail.id} className="hover:bg-base-300">
+                                                <td>{detail.id}</td>
+                                                <td>{detail.products?.name}</td>
+                                                
+                                                <td>{detail.quantity}</td>
+                                        
+                                                <td>{detail.storage_units?.name}</td>
+                                                <td>
+                                                    {shouldDisableInputs('billed_product_price_per_kg') ? (
+                                                        <span className={`block w-20 text-black text-center ${inputBg}`}>
+                                                            {typeof (summary.billed_product_price_per_kg ?? price?.price_per_kg) === 'number' && (summary.billed_product_price_per_kg ?? price?.price_per_kg) !== ''
+                                                                ? Number(summary.billed_product_price_per_kg ?? price?.price_per_kg).toLocaleString('es-MX', { style: 'currency', currency: 'MXN' })
+                                                                : summary.billed_product_price_per_kg ?? price?.price_per_kg ?? ''}
+                                                        </span>
+                                                    ) : (
+                                                        <input type="number" value={summary.billed_product_price_per_kg ?? price?.price_per_kg ?? ''} onChange={e => handleSummaryChange(detail.id, 'billed_product_price_per_kg', e.target.value)} className={`input input-xs w-20 text-black ${shouldDisableInputs('billed_product_price_per_kg') ? inputBg : ''}`} disabled={shouldDisableInputs('billed_product_price_per_kg')} />
+                                                    )}
+                                                </td>
+                                                {/* Billed */}
+                                                <td>{shouldDisableInputs('billed_gross_weight') ? (
+                                                    <span className={`block w-20 text-black text-center ${inputBg}`}>{summary.billed_gross_weight ?? ''}</span>
+                                                ) : (
+                                                    <input type="number" value={summary.billed_gross_weight ?? ''} onChange={e => handleSummaryChange(detail.id, 'billed_gross_weight', e.target.value)} className={`input input-xs w-20 text-black ${shouldDisableInputs('billed_gross_weight') ? inputBg : ''}`} disabled={shouldDisableInputs('billed_gross_weight')} />
+                                                )}</td>
+                                                <td>{shouldDisableInputs('billed_net_weight') ? (
+                                                    <span className={`block w-20 text-black text-center ${inputBg}`}>{summary.billed_net_weight ?? ''}</span>
+                                                ) : (
+                                                    <input type="number" value={summary.billed_net_weight ?? ''} onChange={e => handleSummaryChange(detail.id, 'billed_net_weight', e.target.value)} className={`input input-xs w-20 text-black ${shouldDisableInputs('billed_net_weight') ? inputBg : ''}`} disabled={shouldDisableInputs('billed_net_weight')} />
+                                                )}</td>
+                                                <td>{shouldDisableInputs('billed_profit') ? (
+                                                    <span className={`block w-20 text-black text-center ${inputBg}`}>
+                                                        {typeof summary.billed_profit === 'number' && summary.billed_profit !== ''
+                                                            ? Number(summary.billed_profit).toLocaleString('es-MX', { style: 'currency', currency: 'MXN' })
+                                                            : summary.billed_profit ?? ''}
+                                                    </span>
+                                                ) : (
+                                                    <input type="number" value={summary.billed_profit ?? ''} onChange={e => handleSummaryChange(detail.id, 'billed_profit', e.target.value)} className={`input input-xs w-20 text-black ${shouldDisableInputs('billed_profit') ? inputBg : ''}`} disabled={shouldDisableInputs('billed_profit')} />
+                                                )}</td>
+                                                {/* Measured */}
+                                                <td>{shouldDisableInputs('measured_gross_weight') ? (
+                                                    <span className={`block w-20 text-black text-center ${inputBg}`}>{summary.measured_gross_weight ?? ''}</span>
+                                                ) : (
+                                                    <input type="number" value={summary.measured_gross_weight ?? ''} onChange={e => handleSummaryChange(detail.id, 'measured_gross_weight', e.target.value)} className={`input input-xs w-20 text-black ${shouldDisableInputs('measured_gross_weight') ? inputBg : ''}`} disabled={shouldDisableInputs('measured_gross_weight')} />
+                                                )}</td>
+                                                <td>{shouldDisableInputs('measured_net_weight') ? (
+                                                    <span className={`block w-20 text-black text-center ${inputBg}`}>{summary.measured_net_weight ?? ''}</span>
+                                                ) : (
+                                                    <input type="number" value={summary.measured_net_weight ?? ''} onChange={e => handleSummaryChange(detail.id, 'measured_net_weight', e.target.value)} className={`input input-xs w-20 text-black ${shouldDisableInputs('measured_net_weight') ? inputBg : ''}`} disabled={shouldDisableInputs('measured_net_weight')} />
+                                                )}</td>
+                                                <td>{shouldDisableInputs('measured_profit') ? (
+                                                    <span className={`block w-20 text-black text-center ${inputBg}`}>
+                                                        {typeof summary.measured_profit === 'number' && summary.measured_profit !== ''
+                                                            ? Number(summary.measured_profit).toLocaleString('es-MX', { style: 'currency', currency: 'MXN' })
+                                                            : summary.measured_profit ?? ''}
+                                                    </span>
+                                                ) : (
+                                                    <input type="number" value={summary.measured_profit ?? ''} onChange={e => handleSummaryChange(detail.id, 'measured_profit', e.target.value)} className={`input input-xs w-20 text-black ${shouldDisableInputs('measured_profit') ? inputBg : ''}`} disabled={shouldDisableInputs('measured_profit')} />
+                                                )}</td>
+                                                {/* Store */}
+                                                <td>{shouldDisableInputs('store_gross_weight') ? (
+                                                    <span className={`block w-20 text-black text-center ${inputBg}`}>{summary.store_gross_weight ?? ''}</span>
+                                                ) : (
+                                                    <input type="number" value={summary.store_gross_weight ?? ''} onChange={e => handleSummaryChange(detail.id, 'store_gross_weight', e.target.value)} className={`input input-xs w-20 text-black ${shouldDisableInputs('store_gross_weight') ? inputBg : ''}`} disabled={shouldDisableInputs('store_gross_weight')} />
+                                                )}</td>
+                                                <td>{shouldDisableInputs('store_net_weight') ? (
+                                                    <span className={`block w-20 text-black text-center ${inputBg}`}>{summary.store_net_weight ?? ''}</span>
+                                                ) : (
+                                                    <input type="number" value={summary.store_net_weight ?? ''} onChange={e => handleSummaryChange(detail.id, 'store_net_weight', e.target.value)} className={`input input-xs w-20 text-black ${shouldDisableInputs('store_net_weight') ? inputBg : ''}`} disabled={shouldDisableInputs('store_net_weight')} />
+                                                )}</td>
+                                                <td>{shouldDisableInputs('store_profit') ? (
+                                                    <span className={`block w-20 text-black text-center ${inputBg}`}>
+                                                        {typeof summary.store_profit === 'number' && summary.store_profit !== ''
+                                                            ? Number(summary.store_profit).toLocaleString('es-MX', { style: 'currency', currency: 'MXN' })
+                                                            : summary.store_profit ?? ''}
+                                                    </span>
+                                                ) : (
+                                                    <input type="number" value={summary.store_profit ?? ''} onChange={e => handleSummaryChange(detail.id, 'store_profit', e.target.value)} className={`input input-xs w-20 text-black ${shouldDisableInputs('store_profit') ? inputBg : ''}`} disabled={shouldDisableInputs('store_profit')} />
+                                                )}</td>
+                                            </tr>
+                                        );
+                                    })}
+                                </tbody>
+                            </table>
+                        </div>
+                
+                        <div className="flex items-center justify-between mt-2">
+                            <div>
+                                <button className="btn btn-xs" onClick={() => setPage(0)} disabled={page === 0}>{"<<"}</button>
+                                <button className="btn btn-xs" onClick={() => setPage(p => Math.max(0, p - 1))} disabled={page === 0}>{"<"}</button>
+                                <span className="mx-2">Página {page + 1} de {totalPages}</span>
+                                <button className="btn btn-xs" onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))} disabled={page === totalPages - 1}>{">"}</button>
+                                <button className="btn btn-xs" onClick={() => setPage(totalPages - 1)} disabled={page === totalPages - 1}>{">>"}</button>
+                            </div>
+                        </div>
+
+                
+                        <div className="flex justify-end mt-4">
+                            {next ? (
+                                <button
+                                    type="button"
+                                    className={`btn ${getEstadoColor(nextStatusText || '')} ${loading ? 'loading' : ''}`}
+                                    onClick={handleStatusChange}
+                                    disabled={loading}
+                                >
+                                    {loading ? 'Actualizando...' : next.text}
+                                </button>
+                            ) : currentStatusId === 8 ? (
+                                <button className="btn btn-disabled" disabled>Pagado</button>
+                            ) : null}
+                        </div>
+                        <div className="mb-2 text-xs text-gray-500">
+                            Estado Actual: {order?.estates?.Estates || order?.status}
+                        </div>
                     </div>
                 </>
             )}

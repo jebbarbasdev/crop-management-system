@@ -46,7 +46,6 @@ export default function SummarizedClientPage() {
                     modifier="square"
                     tooltip="Crear Orden"
                     tooltipPlacement="left"
-                    // onClick={onCreateOrderClick} // Si tienes lógica para crear
                 >
                     <IconPlus size={24} />
                 </DaisyButton>
@@ -56,7 +55,6 @@ export default function SummarizedClientPage() {
                 onViewOrderClick={onViewOrderClick}
             />
             <OrderDetailsModal modalModel={detailsModal} order={selectedOrder} />
-            {/* Aquí puedes agregar modales para editar/eliminar si los tienes */}
         </div>
     );
 }

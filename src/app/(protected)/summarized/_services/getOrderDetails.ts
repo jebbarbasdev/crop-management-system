@@ -19,11 +19,8 @@ export default async function getOrderDetails(orderId: number, storeId: number) 
         .eq("order_id", orderId);
 
     if (error) throw error;
-    console.log("Detalles:", data);
-    console.log("Error:", error);
     return data?.map((detail: any) => ({
         ...detail,
-        // Busca el precio por kg correspondiente al store_id de la orden
         sd_price_by_kg: detail.products_stores?.find((ps: any) => ps.store_id === storeId)?.sd_price_by_kg ?? "-"
     }));
 } 

@@ -36,6 +36,5 @@ export default async function getOrders() {
         .is('deleted_at', null)
 
     if (error) throw error
-    console.log("Datos de órdenes:", data)
     return data
 }
