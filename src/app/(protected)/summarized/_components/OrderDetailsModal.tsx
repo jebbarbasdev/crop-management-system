@@ -87,10 +87,41 @@ export default function OrderDetailsModal({ modalModel, order }: OrderDetailsMod
     }, [order?.id, loadAllData]);
 
     useEffect(() => {
-        if (localSummaries.length > 0) {
-            setEditableSummaries(localSummaries.map(s => ({ ...s })));
+        if (localDetails.length > 0) {
+            const summariesByDetailId = Object.fromEntries((localSummaries || []).map(s => [s.order_detail_id, s]));
+            const mergedSummaries = localDetails.map(detail => {
+                const summary = summariesByDetailId[detail.id] || {};
+                let suggestedPrice = '';
+                if (Array.isArray(localPrices)) {
+                    const priceObj = localPrices.find(
+                        p => p.product_name?.trim().toLowerCase() === detail.products?.name?.trim().toLowerCase() &&
+                             p.store_name?.trim().toLowerCase() === (order?.branches?.sd_name || '').trim().toLowerCase()
+                    ) || localPrices.find(
+                        p => p.product_name?.trim().toLowerCase() === detail.products?.name?.trim().toLowerCase()
+                    );
+                    if (priceObj) suggestedPrice = String(priceObj.price_per_kg);
+                }
+                const billedPrice = summary.billed_product_price_per_kg !== undefined && summary.billed_product_price_per_kg !== ''
+                    ? summary.billed_product_price_per_kg
+                    : suggestedPrice;
+                const pricePerKg = Number(billedPrice) || 0;
+                return {
+                    order_detail_id: detail.id,
+                    billed_product_price_per_kg: billedPrice,
+                    billed_gross_weight: summary.billed_gross_weight ?? '',
+                    billed_net_weight: summary.billed_net_weight ?? '',
+                    billed_profit: (pricePerKg * (Number(summary.billed_net_weight) || 0)).toString(),
+                    measured_gross_weight: summary.measured_gross_weight ?? '',
+                    measured_net_weight: summary.measured_net_weight ?? '',
+                    measured_profit: (pricePerKg * (Number(summary.measured_net_weight) || 0)).toString(),
+                    store_gross_weight: summary.store_gross_weight ?? '',
+                    store_net_weight: summary.store_net_weight ?? '',
+                    store_profit: (pricePerKg * (Number(summary.store_net_weight) || 0)).toString(),
+                };
+            });
+            setEditableSummaries(mergedSummaries);
         }
-    }, [localSummaries]);
+    }, [localDetails.length, localSummaries.length]);
 
     useEffect(() => {
         setInputsDisabled(false);
@@ -144,6 +175,9 @@ export default function OrderDetailsModal({ modalModel, order }: OrderDetailsMod
 
     
     const shouldDisableInputs = (field: string) => {
+        if (field.includes('profit')) {
+            return true;
+        }
         if (currentStatusId === 4) {
             return !field.startsWith('billed_');
         }
@@ -237,11 +271,42 @@ export default function OrderDetailsModal({ modalModel, order }: OrderDetailsMod
 
     
     const handleSummaryChange = (order_detail_id: number, field: string, value: string) => {
-        setEditableSummaries(prev => prev.map(summary =>
-            summary.order_detail_id === order_detail_id
-                ? { ...summary, [field]: value }
-                : summary
-        ));
+        setEditableSummaries(prev => {
+            const updatedSummaries = prev.map(summary => {
+                if (summary.order_detail_id === order_detail_id) {
+                    
+                    const updatedSummary = { 
+                        ...summary,
+                        [field]: value === '' ? '' : value 
+                    };
+                    
+                    
+                    const pricePerKg = Number(updatedSummary.billed_product_price_per_kg) || 0;
+                    
+                    
+                    if (field === 'billed_product_price_per_kg' || field === 'billed_net_weight') {
+                        const netWeight = Number(updatedSummary.billed_net_weight) || 0;
+                        updatedSummary.billed_profit = (pricePerKg * netWeight).toString();
+                    }
+                    
+        
+                    if (field === 'billed_product_price_per_kg' || field === 'measured_net_weight') {
+                        const netWeight = Number(updatedSummary.measured_net_weight) || 0;
+                        updatedSummary.measured_profit = (pricePerKg * netWeight).toString();
+                    }
+                    
+                
+                    if (field === 'billed_product_price_per_kg' || field === 'store_net_weight') {
+                        const netWeight = Number(updatedSummary.store_net_weight) || 0;
+                        updatedSummary.store_profit = (pricePerKg * netWeight).toString();
+                    }
+                    
+                    return updatedSummary;
+                }
+                return summary;
+            });
+            return updatedSummaries;
+        });
     };
 
     const handleDetailSelect = (detailId: string) => {
@@ -369,73 +434,135 @@ export default function OrderDetailsModal({ modalModel, order }: OrderDetailsMod
                                                 <td>
                                                     {shouldDisableInputs('billed_product_price_per_kg') ? (
                                                         <span className={`block w-20 text-black text-center ${inputBg}`}>
-                                                            {typeof (summary.billed_product_price_per_kg ?? price?.price_per_kg) === 'number' && (summary.billed_product_price_per_kg ?? price?.price_per_kg) !== ''
-                                                                ? Number(summary.billed_product_price_per_kg ?? price?.price_per_kg).toLocaleString('es-MX', { style: 'currency', currency: 'MXN' })
-                                                                : summary.billed_product_price_per_kg ?? price?.price_per_kg ?? ''}
+                                                            {Number(summary.billed_product_price_per_kg ?? price?.price_per_kg ?? 0).toLocaleString('es-MX', { style: 'currency', currency: 'MXN' })}
                                                         </span>
                                                     ) : (
-                                                        <input type="number" value={summary.billed_product_price_per_kg ?? price?.price_per_kg ?? ''} onChange={e => handleSummaryChange(detail.id, 'billed_product_price_per_kg', e.target.value)} className={`input input-xs w-20 text-black ${shouldDisableInputs('billed_product_price_per_kg') ? inputBg : ''}`} disabled={shouldDisableInputs('billed_product_price_per_kg')} />
+                                                        <input 
+                                                            type="number" 
+                                                            value={summary.billed_product_price_per_kg ?? price?.price_per_kg ?? ''} 
+                                                            onChange={e => handleSummaryChange(detail.id, 'billed_product_price_per_kg', e.target.value)} 
+                                                            className={`input input-xs w-20 text-black ${shouldDisableInputs('billed_product_price_per_kg') ? inputBg : ''}`} 
+                                                            disabled={shouldDisableInputs('billed_product_price_per_kg')}
+                                                            placeholder="0.00"
+                                                        />
                                                     )}
                                                 </td>
                                                 {/* Billed */}
                                                 <td>{shouldDisableInputs('billed_gross_weight') ? (
-                                                    <span className={`block w-20 text-black text-center ${inputBg}`}>{summary.billed_gross_weight ?? ''}</span>
+                                                    <span className={`block w-20 text-black text-center ${inputBg}`}>{`${Number(summary.billed_gross_weight ?? 0)} kg`}</span>
                                                 ) : (
-                                                    <input type="number" value={summary.billed_gross_weight ?? ''} onChange={e => handleSummaryChange(detail.id, 'billed_gross_weight', e.target.value)} className={`input input-xs w-20 text-black ${shouldDisableInputs('billed_gross_weight') ? inputBg : ''}`} disabled={shouldDisableInputs('billed_gross_weight')} />
+                                                    <input 
+                                                        type="number" 
+                                                        value={summary.billed_gross_weight ?? ''} 
+                                                        onChange={e => handleSummaryChange(detail.id, 'billed_gross_weight', e.target.value)} 
+                                                        className={`input input-xs w-20 text-black ${shouldDisableInputs('billed_gross_weight') ? inputBg : ''}`} 
+                                                        disabled={shouldDisableInputs('billed_gross_weight')}
+                                                        placeholder="0"
+                                                    />
                                                 )}</td>
                                                 <td>{shouldDisableInputs('billed_net_weight') ? (
-                                                    <span className={`block w-20 text-black text-center ${inputBg}`}>{summary.billed_net_weight ?? ''}</span>
+                                                    <span className={`block w-20 text-black text-center ${inputBg}`}>{`${Number(summary.billed_net_weight ?? 0)} kg`}</span>
                                                 ) : (
-                                                    <input type="number" value={summary.billed_net_weight ?? ''} onChange={e => handleSummaryChange(detail.id, 'billed_net_weight', e.target.value)} className={`input input-xs w-20 text-black ${shouldDisableInputs('billed_net_weight') ? inputBg : ''}`} disabled={shouldDisableInputs('billed_net_weight')} />
+                                                    <input 
+                                                        type="number" 
+                                                        value={summary.billed_net_weight ?? ''} 
+                                                        onChange={e => handleSummaryChange(detail.id, 'billed_net_weight', e.target.value)} 
+                                                        className={`input input-xs w-20 text-black ${shouldDisableInputs('billed_net_weight') ? inputBg : ''}`} 
+                                                        disabled={shouldDisableInputs('billed_net_weight')}
+                                                        placeholder="0"
+                                                    />
                                                 )}</td>
                                                 <td>{shouldDisableInputs('billed_profit') ? (
                                                     <span className={`block w-20 text-black text-center ${inputBg}`}>
-                                                        {typeof summary.billed_profit === 'number' && summary.billed_profit !== ''
-                                                            ? Number(summary.billed_profit).toLocaleString('es-MX', { style: 'currency', currency: 'MXN' })
-                                                            : summary.billed_profit ?? ''}
+                                                        {Number(summary.billed_profit ?? 0).toLocaleString('es-MX', { style: 'currency', currency: 'MXN' })}
                                                     </span>
                                                 ) : (
-                                                    <input type="number" value={summary.billed_profit ?? ''} onChange={e => handleSummaryChange(detail.id, 'billed_profit', e.target.value)} className={`input input-xs w-20 text-black ${shouldDisableInputs('billed_profit') ? inputBg : ''}`} disabled={shouldDisableInputs('billed_profit')} />
+                                                    <input 
+                                                        type="number" 
+                                                        value={summary.billed_profit ?? ''} 
+                                                        onChange={e => handleSummaryChange(detail.id, 'billed_profit', e.target.value)} 
+                                                        className={`input input-xs w-20 text-black ${shouldDisableInputs('billed_profit') ? inputBg : ''}`} 
+                                                        disabled={shouldDisableInputs('billed_profit')}
+                                                        placeholder="0.00"
+                                                    />
                                                 )}</td>
                                                 {/* Measured */}
                                                 <td>{shouldDisableInputs('measured_gross_weight') ? (
-                                                    <span className={`block w-20 text-black text-center ${inputBg}`}>{summary.measured_gross_weight ?? ''}</span>
+                                                    <span className={`block w-20 text-black text-center ${inputBg}`}>{`${Number(summary.measured_gross_weight ?? 0)} kg`}</span>
                                                 ) : (
-                                                    <input type="number" value={summary.measured_gross_weight ?? ''} onChange={e => handleSummaryChange(detail.id, 'measured_gross_weight', e.target.value)} className={`input input-xs w-20 text-black ${shouldDisableInputs('measured_gross_weight') ? inputBg : ''}`} disabled={shouldDisableInputs('measured_gross_weight')} />
+                                                    <input 
+                                                        type="number" 
+                                                        value={summary.measured_gross_weight ?? ''} 
+                                                        onChange={e => handleSummaryChange(detail.id, 'measured_gross_weight', e.target.value)} 
+                                                        className={`input input-xs w-20 text-black ${shouldDisableInputs('measured_gross_weight') ? inputBg : ''}`} 
+                                                        disabled={shouldDisableInputs('measured_gross_weight')}
+                                                        placeholder="0"
+                                                    />
                                                 )}</td>
                                                 <td>{shouldDisableInputs('measured_net_weight') ? (
-                                                    <span className={`block w-20 text-black text-center ${inputBg}`}>{summary.measured_net_weight ?? ''}</span>
+                                                    <span className={`block w-20 text-black text-center ${inputBg}`}>{`${Number(summary.measured_net_weight ?? 0)} kg`}</span>
                                                 ) : (
-                                                    <input type="number" value={summary.measured_net_weight ?? ''} onChange={e => handleSummaryChange(detail.id, 'measured_net_weight', e.target.value)} className={`input input-xs w-20 text-black ${shouldDisableInputs('measured_net_weight') ? inputBg : ''}`} disabled={shouldDisableInputs('measured_net_weight')} />
+                                                    <input 
+                                                        type="number" 
+                                                        value={summary.measured_net_weight ?? ''} 
+                                                        onChange={e => handleSummaryChange(detail.id, 'measured_net_weight', e.target.value)} 
+                                                        className={`input input-xs w-20 text-black ${shouldDisableInputs('measured_net_weight') ? inputBg : ''}`} 
+                                                        disabled={shouldDisableInputs('measured_net_weight')}
+                                                        placeholder="0"
+                                                    />
                                                 )}</td>
                                                 <td>{shouldDisableInputs('measured_profit') ? (
                                                     <span className={`block w-20 text-black text-center ${inputBg}`}>
-                                                        {typeof summary.measured_profit === 'number' && summary.measured_profit !== ''
-                                                            ? Number(summary.measured_profit).toLocaleString('es-MX', { style: 'currency', currency: 'MXN' })
-                                                            : summary.measured_profit ?? ''}
+                                                        {Number(summary.measured_profit ?? 0).toLocaleString('es-MX', { style: 'currency', currency: 'MXN' })}
                                                     </span>
                                                 ) : (
-                                                    <input type="number" value={summary.measured_profit ?? ''} onChange={e => handleSummaryChange(detail.id, 'measured_profit', e.target.value)} className={`input input-xs w-20 text-black ${shouldDisableInputs('measured_profit') ? inputBg : ''}`} disabled={shouldDisableInputs('measured_profit')} />
+                                                    <input 
+                                                        type="number" 
+                                                        value={summary.measured_profit ?? ''} 
+                                                        onChange={e => handleSummaryChange(detail.id, 'measured_profit', e.target.value)} 
+                                                        className={`input input-xs w-20 text-black ${shouldDisableInputs('measured_profit') ? inputBg : ''}`} 
+                                                        disabled={shouldDisableInputs('measured_profit')}
+                                                        placeholder="0.00"
+                                                    />
                                                 )}</td>
                                                 {/* Store */}
                                                 <td>{shouldDisableInputs('store_gross_weight') ? (
-                                                    <span className={`block w-20 text-black text-center ${inputBg}`}>{summary.store_gross_weight ?? ''}</span>
+                                                    <span className={`block w-20 text-black text-center ${inputBg}`}>{`${Number(summary.store_gross_weight ?? 0)} kg`}</span>
                                                 ) : (
-                                                    <input type="number" value={summary.store_gross_weight ?? ''} onChange={e => handleSummaryChange(detail.id, 'store_gross_weight', e.target.value)} className={`input input-xs w-20 text-black ${shouldDisableInputs('store_gross_weight') ? inputBg : ''}`} disabled={shouldDisableInputs('store_gross_weight')} />
+                                                    <input 
+                                                        type="number" 
+                                                        value={summary.store_gross_weight ?? ''} 
+                                                        onChange={e => handleSummaryChange(detail.id, 'store_gross_weight', e.target.value)} 
+                                                        className={`input input-xs w-20 text-black ${shouldDisableInputs('store_gross_weight') ? inputBg : ''}`} 
+                                                        disabled={shouldDisableInputs('store_gross_weight')}
+                                                        placeholder="0"
+                                                    />
                                                 )}</td>
                                                 <td>{shouldDisableInputs('store_net_weight') ? (
-                                                    <span className={`block w-20 text-black text-center ${inputBg}`}>{summary.store_net_weight ?? ''}</span>
+                                                    <span className={`block w-20 text-black text-center ${inputBg}`}>{`${Number(summary.store_net_weight ?? 0)} kg`}</span>
                                                 ) : (
-                                                    <input type="number" value={summary.store_net_weight ?? ''} onChange={e => handleSummaryChange(detail.id, 'store_net_weight', e.target.value)} className={`input input-xs w-20 text-black ${shouldDisableInputs('store_net_weight') ? inputBg : ''}`} disabled={shouldDisableInputs('store_net_weight')} />
+                                                    <input 
+                                                        type="number" 
+                                                        value={summary.store_net_weight ?? ''} 
+                                                        onChange={e => handleSummaryChange(detail.id, 'store_net_weight', e.target.value)} 
+                                                        className={`input input-xs w-20 text-black ${shouldDisableInputs('store_net_weight') ? inputBg : ''}`} 
+                                                        disabled={shouldDisableInputs('store_net_weight')}
+                                                        placeholder="0"
+                                                    />
                                                 )}</td>
                                                 <td>{shouldDisableInputs('store_profit') ? (
                                                     <span className={`block w-20 text-black text-center ${inputBg}`}>
-                                                        {typeof summary.store_profit === 'number' && summary.store_profit !== ''
-                                                            ? Number(summary.store_profit).toLocaleString('es-MX', { style: 'currency', currency: 'MXN' })
-                                                            : summary.store_profit ?? ''}
+                                                        {Number(summary.store_profit ?? 0).toLocaleString('es-MX', { style: 'currency', currency: 'MXN' })}
                                                     </span>
                                                 ) : (
-                                                    <input type="number" value={summary.store_profit ?? ''} onChange={e => handleSummaryChange(detail.id, 'store_profit', e.target.value)} className={`input input-xs w-20 text-black ${shouldDisableInputs('store_profit') ? inputBg : ''}`} disabled={shouldDisableInputs('store_profit')} />
+                                                    <input 
+                                                        type="number" 
+                                                        value={summary.store_profit ?? ''} 
+                                                        onChange={e => handleSummaryChange(detail.id, 'store_profit', e.target.value)} 
+                                                        className={`input input-xs w-20 text-black ${shouldDisableInputs('store_profit') ? inputBg : ''}`} 
+                                                        disabled={shouldDisableInputs('store_profit')}
+                                                        placeholder="0.00"
+                                                    />
                                                 )}</td>
                                             </tr>
                                         );
