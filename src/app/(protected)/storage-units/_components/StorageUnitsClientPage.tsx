@@ -1,4 +1,5 @@
 'use client';
+
 import DaisyButton from "@/app/_components/DaisyButton";
 import GenericTitle from "@/app/_components/GenericTitle";
 import { IconPlus } from "@tabler/icons-react";
