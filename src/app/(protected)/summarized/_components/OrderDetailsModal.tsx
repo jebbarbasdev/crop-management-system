@@ -121,7 +121,7 @@ export default function OrderDetailsModal({ modalModel, order }: OrderDetailsMod
             });
             setEditableSummaries(mergedSummaries);
         }
-    }, [localDetails.length, localSummaries.length]);
+    }, [localDetails, localPrices, localSummaries, order?.branches?.sd_name]);
 
     useEffect(() => {
         setInputsDisabled(false);
