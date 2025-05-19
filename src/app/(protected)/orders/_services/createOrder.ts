@@ -72,9 +72,12 @@ export async function createOrder(input: CreateOrderInput) {
                 throw new Error(`Product or storage unit not found for detail: ${JSON.stringify(detail)}`);
             }
 
-            const productStore = product.products_stores[0];
-            const productStorageUnit = product.available_storage_units.find(u => u.id === detail.unitId);
-            const storeStorageUnitWeight = storageUnit.storage_unit_store_weights[0];
+            // Encontrar la configuración de la tienda para este producto
+            const productStore = (product.products_stores || []).find(ps => ps.store_id === input.storeId);
+            // Encontrar la configuración de la unidad de almacenamiento para este producto
+            const productStorageUnit = (product.products_storage_units || []).find(psu => psu.storage_unit_id === detail.unitId);
+            // Encontrar el peso de la unidad de almacenamiento para esta tienda
+            const storeStorageUnitWeight = (storageUnit.storage_unit_store_weights || []).find(w => w.store_id === input.storeId);
 
             if (!productStore || !productStorageUnit || !storeStorageUnitWeight) {
                 throw new Error(`Product store or storage unit weight not found for detail: ${JSON.stringify(detail)}`);

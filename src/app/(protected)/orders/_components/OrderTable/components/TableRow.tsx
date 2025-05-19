@@ -34,7 +34,10 @@ export const TableRow = ({
     onSelectKeyDown,
 }: TableRowProps) => {
     // Filtrar las unidades disponibles para este producto
-    const availableUnits = product.available_storage_units;
+    const availableUnits = (product.products_storage_units || []).map(psu => ({
+        id: psu.storage_unit_id,
+        name: psu.storage_unit.name
+    }));
     const defaultUnit = availableUnits.find(u => u.id === defaultUnitId) || availableUnits[0];
 
     return (

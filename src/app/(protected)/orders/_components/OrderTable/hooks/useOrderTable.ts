@@ -22,8 +22,8 @@ export const useOrderTable = ({ storeId, onOrderDetailsChange }: OrderTableProps
     const [selectedBranchToAdd, setSelectedBranchToAdd] = useState<number | null>(null);
 
     // Computed values
-    const defaultUnitId = products[0]?.available_storage_units.find(u => u.name.toLowerCase().includes("caja"))?.id || 
-                         products[0]?.available_storage_units[0]?.id || 0;
+    const defaultUnitId = products[0]?.products_storage_units?.find(u => u.storage_unit.name.toLowerCase().includes("caja"))?.storage_unit_id || 
+                         (products[0]?.products_storage_units || [])[0]?.storage_unit_id || 0;
     const filteredBranches = availableBranches.filter(
         branch => !selectedBranches.some(b => b.value === branch.value)
     );

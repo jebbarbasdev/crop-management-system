@@ -4,11 +4,18 @@ export type StoreProduct = {
     id: number;
     name: string;
     created_at: string;
-    created_by: string;
+    created_by: {
+        employee_number: number;
+        full_name: string | null;
+    };
     updated_at: string;
-    updated_by: string;
+    updated_by: {
+        employee_number: number;
+        full_name: string | null;
+    };
     deleted_at: string | null;
     deleted_by: string | null;
+    // Configuración de todas las tiendas
     products_stores: {
         created_at: string;
         created_by: string;
@@ -19,11 +26,34 @@ export type StoreProduct = {
         store_id: number;
         updated_at: string;
         updated_by: string;
+        store: {
+            id: number;
+            name: string;
+        };
     }[];
-    available_storage_units: {
-        id: number;
-        name: string;
+    // Configuración de todas las unidades de almacenamiento
+    products_storage_units: {
+        created_at: string;
+        created_by: string;
+        product_id: number;
+        storage_unit_id: number;
         weight_by_unit: number;
+        updated_at: string;
+        updated_by: string;
+        storage_unit: {
+            id: number;
+            name: string;
+            storage_unit_store_weights: {
+                id: number;
+                storage_unit_id: number;
+                store_id: number;
+                weight_by_unit: number;
+                store: {
+                    id: number;
+                    name: string;
+                };
+            }[];
+        };
     }[];
 };
 
@@ -41,7 +71,15 @@ export async function getStoreProducts(storeId: number): Promise<StoreProduct[]>
         .from('products')
         .select(`
             *,
-            products_stores!inner (
+            created_by:users!created_by (
+                employee_number,
+                full_name
+            ),
+            updated_by:users!updated_by (
+                employee_number,
+                full_name
+            ),
+            products_stores (
                 created_at,
                 created_by,
                 product_id,
@@ -50,20 +88,36 @@ export async function getStoreProducts(storeId: number): Promise<StoreProduct[]>
                 sd_sku,
                 store_id,
                 updated_at,
-                updated_by
+                updated_by,
+                store:store_id (
+                    id,
+                    name
+                )
             ),
-            available_storage_units:products_storage_units!inner (
-                storage_units!inner (
+            products_storage_units (
+                created_at,
+                created_by,
+                product_id,
+                storage_unit_id,
+                weight_by_unit,
+                updated_at,
+                updated_by,
+                storage_unit:storage_unit_id (
                     id,
                     name,
-                    storage_unit_store_weights!inner (
-                        weight_by_unit
+                    storage_unit_store_weights (
+                        id,
+                        storage_unit_id,
+                        store_id,
+                        weight_by_unit,
+                        store:store_id (
+                            id,
+                            name
+                        )
                     )
                 )
             )
         `)
-        .eq('products_stores.store_id', storeId)
-        .eq('available_storage_units.storage_units.storage_unit_store_weights.store_id', storeId)
         .is('deleted_at', null)
         .order('name');
 
@@ -72,23 +126,24 @@ export async function getStoreProducts(storeId: number): Promise<StoreProduct[]>
         throw error;
     }
 
-    // Transformar los datos para tener una estructura más limpia
-    return data.map(product => ({
+    // Asegurarnos de que products_stores y products_storage_units siempre sean arrays
+    return (data || []).map(product => ({
         ...product,
-        available_storage_units: product.available_storage_units.map(su => ({
-            id: su.storage_units.id,
-            name: su.storage_units.name,
-            weight_by_unit: su.storage_units.storage_unit_store_weights[0]?.weight_by_unit || 0
-        }))
-    })) || [];
+        products_stores: product.products_stores || [],
+        products_storage_units: product.products_storage_units || []
+    }));
 }
 
 export async function getStoreProductsForSelect(storeId: number): Promise<StoreProductSelectOption[]> {
     const products = await getStoreProducts(storeId);
-    return products.map(product => ({
-        value: product.id,
-        label: product.name,
-        price: product.products_stores[0].sd_price_by_kg,
-        sku: product.products_stores[0].sd_sku
-    }));
+    return products.map(product => {
+        // Asegurarnos de que products_stores sea un array antes de usar find
+        const storeConfig = (product.products_stores || []).find(ps => ps.store_id === storeId);
+        return {
+            value: product.id,
+            label: product.name,
+            price: storeConfig?.sd_price_by_kg ?? 0,
+            sku: storeConfig?.sd_sku ?? ''
+        };
+    });
 } 
