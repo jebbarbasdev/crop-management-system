@@ -19,8 +19,16 @@ type OrderDetailItem = {
     unitId: number;
 };
 
+function getLocalToday() {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+}
+
 export default function OrdersClientPage() {
-    const [orderDate, setOrderDate] = useState<string>("");
+    const [orderDate, setOrderDate] = useState<string>(getLocalToday);
     const [selectedStoreId, setSelectedStoreId] = useState<number | null>(null);
     const [orderDetails, setOrderDetails] = useState<OrderDetail>({});
     const queryClient = useQueryClient();
