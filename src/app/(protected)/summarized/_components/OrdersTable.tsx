@@ -28,7 +28,13 @@ export default function OrdersTable({
         {
             accessorKey: 'delivery_date',
             header: () => 'Fecha Entrega',
-            cell: ({ getValue }) => getValue() ? new Date(getValue<string>()).toLocaleDateString() : ''
+            cell: ({ getValue }) => {
+                const value = getValue<string>();
+                if (!value) return '';
+                const [year, month, day] = value.split('-').map(Number);
+                const localDate = new Date(year, month - 1, day);
+                return localDate.toLocaleDateString();
+            }
         },
         {
             accessorKey: 'status',
