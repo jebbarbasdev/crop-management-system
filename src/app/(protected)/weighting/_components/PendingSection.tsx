@@ -1,6 +1,9 @@
 import GenericTitle from "@/app/_components/GenericTitle";
 import { OrderDetailWithSummary } from "../_services/getOrderDetailsWithSummaries";
 import clsx from "clsx";
+import useModal from "@/app/_hooks/useModal";
+import { useState } from "react";
+import PendingDetailModal from "./PendingDetailModal";
 
 interface PendingSectionProps {
     details: OrderDetailWithSummary[];
@@ -15,6 +18,15 @@ export default function PendingSection({
     selectedDetailId,
     onDetailClick 
 }: PendingSectionProps) {
+    const [selectedDetail, setSelectedDetail] = useState<OrderDetailWithSummary | null>(null);
+    const detailModal = useModal();
+
+    const handleDetailClick = (detail: OrderDetailWithSummary) => {
+        setSelectedDetail(detail);
+        detailModal.open();
+        onDetailClick?.(detail);
+    };
+
     return (
         <div>
             <GenericTitle>Pendientes</GenericTitle>
@@ -45,7 +57,7 @@ export default function PendingSection({
                                             ? '!bg-blue-600 !text-white hover:!bg-blue-700 cursor-pointer' 
                                             : 'hover:!bg-base-300 cursor-pointer'
                                     )}
-                                    onClick={() => onDetailClick?.(detail)}
+                                    onClick={() => handleDetailClick(detail)}
                                 >
                                     <td>{detail.product.name}</td>
                                     <td>{detail.quantity}</td>
@@ -56,6 +68,10 @@ export default function PendingSection({
                     </tbody>
                 </table>
             </div>
+            <PendingDetailModal 
+                modalModel={detailModal}
+                detail={selectedDetail}
+            />
         </div>
     );
 } 

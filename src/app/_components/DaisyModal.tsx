@@ -1,5 +1,5 @@
 import clsx from "clsx"
-import { DialogHTMLAttributes, FormEventHandler, ReactNode } from "react"
+import { FormEventHandler, ReactNode } from "react"
 import DaisyButton from "./DaisyButton"
 import { IconX } from "@tabler/icons-react"
 import GenericTitle from "./GenericTitle"
@@ -22,9 +22,10 @@ export interface DaisyModalProps {
     onSubmit?: FormEventHandler<HTMLFormElement>
 
     loading?: boolean
+    disabled?: boolean
 }
 
-export default function DaisyModal({ modalModel: { id, close }, size, title, cancelText, confirmText, onSubmit, loading, children, showCancelButton = true, showConfirmButton = true }: DaisyModalProps) {
+export default function DaisyModal({ modalModel: { id, close }, size, title, cancelText, confirmText, onSubmit, loading, disabled, children, showCancelButton = true, showConfirmButton = true }: DaisyModalProps) {
     const getSizeTailwindClass = () => {
         switch (size) {
             case 'xs': return 'max-w-xl'
@@ -59,11 +60,11 @@ export default function DaisyModal({ modalModel: { id, close }, size, title, can
                     {(showCancelButton || showConfirmButton) && (
                         <div className="modal-action">
                             {showCancelButton && (
-                                    <DaisyButton
-                                        variant="secondary"
-                                        appearance="outline"
-                                        type="button"
-                                        onClick={close}
+                                <DaisyButton
+                                    variant="secondary"
+                                    appearance="outline"
+                                    type="button"
+                                    onClick={close}
                                     loading={loading}
                                 >
                                     {cancelText ?? 'Cancelar'}
@@ -75,6 +76,7 @@ export default function DaisyModal({ modalModel: { id, close }, size, title, can
                                     variant="primary"
                                     type="submit"
                                     loading={loading}
+                                    disabled={disabled}
                                 >
                                     {confirmText ?? 'Guardar'}
                                 </DaisyButton>

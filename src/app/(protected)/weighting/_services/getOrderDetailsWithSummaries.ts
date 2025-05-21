@@ -13,6 +13,7 @@ export type OrderDetailWithSummary = {
     storage_unit: {
         id: number;
         name: string;
+        weight_by_unit: number;
     };
     summary: {
         id: number;
@@ -38,6 +39,25 @@ export type OrderDetailsWithSummaries = {
 export async function getOrderDetailsWithSummaries(orderId: number): Promise<OrderDetailsWithSummaries> {
     const supabase = createSupabaseBrowserClient();
 
+    // First get the order to get the store_id
+    const { data: order, error: orderError } = await supabase
+        .from('orders')
+        .select(`
+            id,
+            branch:branch_id (
+                store:store_id (
+                    id
+                )
+            )
+        `)
+        .eq('id', orderId)
+        .single();
+
+    if (orderError) throw orderError;
+
+    const storeId = order.branch?.store?.id;
+    if (!storeId) throw new Error('No se encontró la tienda asociada al pedido');
+
     const { data, error } = await supabase
         .from('order_details')
         .select(`
@@ -52,7 +72,10 @@ export async function getOrderDetailsWithSummaries(orderId: number): Promise<Ord
             ),
             storage_unit:storage_unit_id (
                 id,
-                name
+                name,
+                storage_unit_store_weights!inner (
+                    weight_by_unit
+                )
             ),
             summary:order_detail_summaries!order_detail_summaries_order_detail_id_fkey (
                 id,
@@ -69,7 +92,8 @@ export async function getOrderDetailsWithSummaries(orderId: number): Promise<Ord
                 store_profit
             )
         `)
-        .eq('order_id', orderId);
+        .eq('order_id', orderId)
+        .eq('storage_unit.storage_unit_store_weights.store_id', storeId);
 
     if (error) throw error;
 
@@ -80,6 +104,10 @@ export async function getOrderDetailsWithSummaries(orderId: number): Promise<Ord
     data.forEach((detail: any) => {
         const detailWithSummary: OrderDetailWithSummary = {
             ...detail,
+            storage_unit: {
+                ...detail.storage_unit,
+                weight_by_unit: detail.storage_unit.storage_unit_store_weights[0]?.weight_by_unit ?? 0
+            },
             summary: detail.summary[0] // Since it's a 1-1 relationship, we take the first (and only) summary
         };
 

@@ -59,12 +59,6 @@ export default function OrdersClientPage() {
     // Verificar si hay al menos un detalle válido
     const hasValidDetails = useMemo(() => validOrderDetails.length > 0, [validOrderDetails]);
 
-    useEffect(() => {
-        // Set today's date in YYYY-MM-DD format
-        const today = new Date().toISOString().split('T')[0];
-        setOrderDate(today);
-    }, []);
-
     const createOrderMutation = useMutation({
         mutationFn: createOrder,
         onSuccess: () => {

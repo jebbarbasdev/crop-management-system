@@ -39,6 +39,12 @@ export default function WeightingClientPage() {
         setSelectedDetail(null);
     };
 
+    // Reset all states when weighting is completed
+    const handleWeightingComplete = () => {
+        setSelectedOrder(null);
+        setSelectedDetail(null);
+    };
+
     return (
         <div>
             <GenericTitle removeMargin>Pesaje</GenericTitle>
@@ -49,16 +55,22 @@ export default function WeightingClientPage() {
                     orders={orders}
                     onOrderClick={handleOrderClick}
                     selectedOrderId={selectedOrder?.id}
+                    isLoading={isLoadingOrders}
                 />
+
                 <PendingSection 
                     details={orderDetails?.unweighted ?? []}
                     isLoading={isLoadingDetails}
                     selectedDetailId={selectedDetail?.id}
                     onDetailClick={setSelectedDetail}
                 />
+                
                 <WeighedSection 
                     details={orderDetails?.weighted ?? []}
                     isLoading={isLoadingDetails}
+                    orderId={selectedOrder?.id}
+                    totalDetails={(orderDetails?.weighted?.length ?? 0) + (orderDetails?.unweighted?.length ?? 0)}
+                    onComplete={handleWeightingComplete}
                 />
             </div>
         </div>

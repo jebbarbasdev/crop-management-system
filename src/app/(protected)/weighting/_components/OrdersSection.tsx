@@ -9,9 +9,10 @@ interface OrdersSectionProps {
     orders: Order[];
     onOrderClick?: (order: Order) => void;
     selectedOrderId?: number;
+    isLoading?: boolean;
 }
 
-export default function OrdersSection({ date, onDateChange, orders, onOrderClick, selectedOrderId }: OrdersSectionProps) {
+export default function OrdersSection({ date, onDateChange, orders, onOrderClick, selectedOrderId, isLoading }: OrdersSectionProps) {
     return (
         <div>
             <GenericTitle>Pedidos</GenericTitle>
@@ -34,7 +35,11 @@ export default function OrdersSection({ date, onDateChange, orders, onOrderClick
                             </tr>
                         </thead>
                         <tbody>
-                            {orders.length === 0 ? (
+                            {isLoading ? (
+                                <tr>
+                                    <td colSpan={3} className="text-center text-gray-400 text-sm">Cargando...</td>
+                                </tr>
+                            ) : orders.length === 0 ? (
                                 <tr>
                                     <td colSpan={3} className="text-center text-gray-400 text-sm">No hay pedidos para esta fecha.</td>
                                 </tr>
