@@ -7,13 +7,14 @@ export type DaisyInputSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
 export interface DaisyInputProps extends InputHTMLAttributes<HTMLInputElement> {
     label?: string;
     error?: string;
+    badge?: string;
 
     color?: DaisyInputColor;
     daisySize?: DaisyInputSize;
     ghost?: boolean;
 }
 
-export default function DaisyInput({ label, error, color, daisySize, ghost, className, ...props }: DaisyInputProps) {
+export default function DaisyInput({ label, error, badge, color, daisySize, ghost, className, ...props }: DaisyInputProps) {
     const getColorTailwindClassName = () => {
         switch (color) {
             case 'neutral': return 'input-neutral';
@@ -44,10 +45,12 @@ export default function DaisyInput({ label, error, color, daisySize, ghost, clas
         <fieldset className="fieldset w-full">
             {label && <legend className="fieldset-legend">{label}</legend>}
 
-            <input 
-                {...props}
+            <label 
                 className={clsx("input w-full", { "input-error": error, "input-ghost": ghost }, getColorTailwindClassName(), getSizeTailwindClassName(), className)}    
-            />
+            >
+                <input {...props} className="grow" />
+                {badge && <span className="badge badge-neutral badge-xs">{badge}</span>}
+            </label>
 
             {error && <p className="label text-error">{error}</p>}
         </fieldset>

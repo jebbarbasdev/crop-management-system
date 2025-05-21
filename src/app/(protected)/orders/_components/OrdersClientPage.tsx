@@ -19,8 +19,16 @@ type OrderDetailItem = {
     unitId: number;
 };
 
+function getLocalToday() {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+}
+
 export default function OrdersClientPage() {
-    const [orderDate, setOrderDate] = useState<string>("");
+    const [orderDate, setOrderDate] = useState<string>(getLocalToday);
     const [selectedStoreId, setSelectedStoreId] = useState<number | null>(null);
     const [orderDetails, setOrderDetails] = useState<OrderDetail>({});
     const queryClient = useQueryClient();
@@ -50,12 +58,6 @@ export default function OrdersClientPage() {
 
     // Verificar si hay al menos un detalle válido
     const hasValidDetails = useMemo(() => validOrderDetails.length > 0, [validOrderDetails]);
-
-    useEffect(() => {
-        // Set today's date in YYYY-MM-DD format
-        const today = new Date().toISOString().split('T')[0];
-        setOrderDate(today);
-    }, []);
 
     const createOrderMutation = useMutation({
         mutationFn: createOrder,
